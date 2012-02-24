@@ -1,0 +1,3 @@
+[submodule "webarchiver"]
+	path = webarchiver
+	url = git@github.com:JanX2/webarchiver.git
