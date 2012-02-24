@@ -12,10 +12,12 @@ int main(int argc, const char * argv[])
 {
 
 	@autoreleasepool {
-	    
+
+		NSError *error = nil;
+
 		NSUserDefaults *args = [NSUserDefaults standardUserDefaults];	
 		
-		NSString *url = [args stringForKey:@"url"];
+		NSString *urlString = [args stringForKey:@"url"];
 		NSString *verboseString = [args stringForKey:@"verbose"];
 		NSString *output = [args stringForKey:@"output"];
 		
@@ -23,7 +25,7 @@ int main(int argc, const char * argv[])
 		
 		BOOL isPath;
 		
-		if (url == nil) {
+		if (urlString == nil) {
 #if 0
 			NSArray *arguments = [[NSProcessInfo processInfo] arguments];
 			const char *executablePath = [[arguments objectAtIndex:0] 
@@ -34,7 +36,7 @@ int main(int argc, const char * argv[])
 			return EXIT_FAILURE;
 		}
 		
-		if ([url hasPrefix:@"http://"]) {
+		if ([urlString hasPrefix:@"http://"] || [urlString hasPrefix:@"file://"]) {
 			isPath = NO;
 		} else {
 			isPath = YES;
