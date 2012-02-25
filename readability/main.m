@@ -83,6 +83,17 @@ int main(int argc, const char * argv[])
 		NSString *result = source;
 
 		
+		NSXMLDocumentContentKind contentKind = NSXMLDocumentXHTMLKind;
+		
+		NSXMLDocument *doc = [[NSXMLDocument alloc] initWithXMLString:source 
+															  options:NSXMLDocumentTidyHTML 
+																error:&error];
+		
+		if (doc != nil) {
+			[doc setDocumentContentKind:contentKind];
+		}
+
+		
 		if (result == nil) {
 			NSLog(@"\n%@", error);
 		}
@@ -92,20 +103,13 @@ int main(int argc, const char * argv[])
 			fprintf(stdout, "%s\n", [result UTF8String]);
 		}
 		else {
-			NSXMLDocument *doc = [NSXMLDocument alloc];
-			doc = [doc initWithXMLString:source options:NSXMLDocumentTidyHTML error:&error];
-			
 			BOOL OK;
 			
 			if (doc != nil)	{
-				NSXMLDocumentContentKind contentKind = NSXMLDocumentXHTMLKind;
-				[doc setDocumentContentKind:contentKind];
-				
 				NSData *docData = [doc XMLDataWithOptions:contentKind];
 				OK = [docData writeToFile:output  
 							 options:NSDataWritingAtomic 
 							   error:&error];
-				[doc release];
 			}
 			else {
 				OK = NO;
@@ -114,6 +118,10 @@ int main(int argc, const char * argv[])
 			if (!OK && verbose) {
 				NSLog(@"\n%@", error);
 			}
+		}
+		
+		if (doc != nil)	{
+			[doc release];
 		}
 		
 	}
