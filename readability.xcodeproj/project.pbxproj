@@ -13,6 +13,7 @@
 		3DC9BE3314F77F37007062BC /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DC9BE3214F77F37007062BC /* WebKit.framework */; };
 		3DC9BE5314F7D3D4007062BC /* NSURL+ValidityChecking.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC9BE5014F7D3D4007062BC /* NSURL+ValidityChecking.m */; };
 		3DC9BE5414F7D3D4007062BC /* KBWebArchiver.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC9BE5214F7D3D4007062BC /* KBWebArchiver.m */; };
+		3DC9BE7214F93ECC007062BC /* JXReadabilityDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC9BE7114F93ECC007062BC /* JXReadabilityDocument.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -40,6 +41,8 @@
 		3DC9BE5014F7D3D4007062BC /* NSURL+ValidityChecking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSURL+ValidityChecking.m"; path = "webarchiver/NSURL+ValidityChecking.m"; sourceTree = "<group>"; };
 		3DC9BE5114F7D3D4007062BC /* KBWebArchiver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KBWebArchiver.h; path = webarchiver/KBWebArchiver.h; sourceTree = "<group>"; };
 		3DC9BE5214F7D3D4007062BC /* KBWebArchiver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = KBWebArchiver.m; path = webarchiver/KBWebArchiver.m; sourceTree = "<group>"; };
+		3DC9BE7014F93ECC007062BC /* JXReadabilityDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JXReadabilityDocument.h; path = readability/JXReadabilityDocument.h; sourceTree = "<group>"; };
+		3DC9BE7114F93ECC007062BC /* JXReadabilityDocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = JXReadabilityDocument.m; path = readability/JXReadabilityDocument.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +61,7 @@
 		3D706B7D14F6ABDB008ACC2E = {
 			isa = PBXGroup;
 			children = (
+				3DC9BE6E14F93EB8007062BC /* Classes */,
 				3D706B8E14F6ABDD008ACC2E /* readability */,
 				3DC9BE5514F7D3DF007062BC /* Third Party */,
 				3D706B9F14F6AC59008ACC2E /* Configs */,
@@ -128,6 +132,15 @@
 			name = KBWebArchiver;
 			sourceTree = "<group>";
 		};
+		3DC9BE6E14F93EB8007062BC /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				3DC9BE7014F93ECC007062BC /* JXReadabilityDocument.h */,
+				3DC9BE7114F93ECC007062BC /* JXReadabilityDocument.m */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -182,6 +195,7 @@
 				3D706B9014F6ABDD008ACC2E /* main.m in Sources */,
 				3DC9BE5314F7D3D4007062BC /* NSURL+ValidityChecking.m in Sources */,
 				3DC9BE5414F7D3D4007062BC /* KBWebArchiver.m in Sources */,
+				3DC9BE7214F93ECC007062BC /* JXReadabilityDocument.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

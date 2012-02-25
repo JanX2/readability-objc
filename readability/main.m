@@ -12,6 +12,7 @@
 #import <WebKit/WebArchive.h>
 
 #import "KBWebArchiver.h"
+#import "JXReadabilityDocument.h"
 
 int main(int argc, const char * argv[])
 {
@@ -88,9 +89,14 @@ int main(int argc, const char * argv[])
 		NSXMLDocument *doc = [[NSXMLDocument alloc] initWithXMLString:source 
 															  options:NSXMLDocumentTidyHTML 
 																error:&error];
+		NSXMLDocument *summaryDoc = nil;
 		
 		if (doc != nil) {
 			[doc setDocumentContentKind:contentKind];
+			
+			JXReadabilityDocument *readabilityDoc = [[JXReadabilityDocument alloc] initWithXMLDocument:doc];
+			summaryDoc = [readabilityDoc summaryXMLDocument];
+			[readabilityDoc release];
 		}
 
 		
