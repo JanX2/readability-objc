@@ -80,6 +80,22 @@ int main(int argc, const char * argv[])
 		
 		NSString *source = [[[NSString alloc] initWithData:[resource data] 
 												  encoding:encoding] autorelease];
+#if DEBUG
+		{
+			NSString *outputRawPath = [[[output stringByDeletingPathExtension] 
+										stringByAppendingString:@"-raw"]
+									   stringByAppendingPathExtension:[output pathExtension]];
+			BOOL OK;
+			OK = [source writeToFile:outputRawPath 
+						  atomically:YES 
+							encoding:encoding 
+							   error:&error];
+			
+			if (!OK && verbose) {
+				NSLog(@"\n%@", error);
+			}
+		}
+#endif
 		
 		NSString *result = source;
 
@@ -89,6 +105,29 @@ int main(int argc, const char * argv[])
 		NSXMLDocument *doc = [[NSXMLDocument alloc] initWithXMLString:source 
 															  options:NSXMLDocumentTidyHTML 
 																error:&error];
+#if DEBUG
+		{
+			NSString *outputTidyPath = [[[output stringByDeletingPathExtension] 
+										 stringByAppendingString:@"-tidy"]
+										stringByAppendingPathExtension:[output pathExtension]];
+			BOOL OK;
+			
+			if (doc != nil)	{
+				NSData *docData = [doc XMLDataWithOptions:(contentKind | NSXMLNodePrettyPrint)];
+				OK = [docData writeToFile:outputTidyPath  
+								  options:NSDataWritingAtomic 
+									error:&error];
+			}
+			else {
+				OK = NO;
+			}
+			
+			if (!OK && verbose) {
+				NSLog(@"\n%@", error);
+			}
+		}
+#endif
+		
 		NSXMLDocument *summaryDoc = nil;
 		
 		if (doc != nil) {
@@ -112,7 +151,7 @@ int main(int argc, const char * argv[])
 			BOOL OK;
 			
 			if (doc != nil)	{
-				NSData *docData = [doc XMLDataWithOptions:contentKind];
+				NSData *docData = [doc XMLDataWithOptions:(contentKind | NSXMLNodePrettyPrint)];
 				OK = [docData writeToFile:output  
 							 options:NSDataWritingAtomic 
 							   error:&error];
