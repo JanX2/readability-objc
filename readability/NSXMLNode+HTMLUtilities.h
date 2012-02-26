@@ -12,4 +12,10 @@
 
 - (void)addCSSName:(NSString *)cssName toAttributeWithName:(NSString *)attributeName;
 
+- (NSString *)cssNamesForAttributeWithName:(NSString *)attributeName;
+#if 0
+- (NSArray *)cssNamesSetForAttributeWithName:(NSString *)attributeName;
+- (NSArray *)cssNamesForAttributeWithName:(NSString *)attributeName;
+#endif
+
 @end

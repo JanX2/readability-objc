@@ -14,6 +14,12 @@
 	NSXMLDocument *			html;
 	
 	NSMutableDictionary *	options;
+
+	NSRegularExpression *	unlikelyCandidatesRe;
+	NSRegularExpression *	okMaybeItsACandidateRe;
+	NSRegularExpression *	positiveRe;
+	NSRegularExpression *	negativeRe;
+	NSRegularExpression *	divToPElementsRe;
 }
 
 @property (nonatomic, copy) NSString *input;

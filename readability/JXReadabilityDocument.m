@@ -13,6 +13,13 @@
 #define TEXT_LENGTH_THRESHOLD	25
 #define RETRY_LENGTH			250
 
+NSString * const	unlikelyCandidates = 	@"combx|comment|community|disqus|extra|foot|header|menu|remark|rss|shoutbox|sidebar|sponsor|ad-break|agegate|pagination|pager|popup|tweet|twitter";
+NSString * const	okMaybeItsACandidate = 	@"and|article|body|column|main|shadow";
+NSString * const	positiveNames = 	@"article|body|content|entry|hentry|main|page|pagination|post|text|blog|story";
+NSString * const	negativeNames = 	@"combx|comment|com-|contact|foot|footer|footnote|masthead|media|meta|outbrain|promo|related|scroll|shoutbox|sidebar|sponsor|shopping|tags|tool|widget";
+NSString * const	divToPElements = 	@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul)";
+
+
 @implementation JXReadabilityDocument
 
 @synthesize input;
@@ -27,6 +34,12 @@
 	if (self) {
 		self.html = aDoc;
 		self.options = [NSMutableDictionary dictionary];
+		
+		unlikelyCandidatesRe = 		[[NSRegularExpression alloc] initWithPattern:unlikelyCandidates		 options:0 error:NULL];
+		okMaybeItsACandidateRe = 	[[NSRegularExpression alloc] initWithPattern:okMaybeItsACandidate	 options:0 error:NULL];
+		positiveRe = 				[[NSRegularExpression alloc] initWithPattern:positiveNames			 options:0 error:NULL];
+		negativeRe = 				[[NSRegularExpression alloc] initWithPattern:negativeNames			 options:0 error:NULL];
+		divToPElementsRe = 			[[NSRegularExpression alloc] initWithPattern:divToPElements			 options:0 error:NULL];
 	}
 	
 	return self;
@@ -36,6 +49,12 @@
 {
 	self.html = nil;
 	self.options = nil;
+	
+	[unlikelyCandidatesRe release];
+	[okMaybeItsACandidateRe release];
+	[positiveRe release];
+	[negativeRe release];
+	[divToPElementsRe release];
 	
 	[super dealloc];
 }
@@ -53,6 +72,30 @@
 	va_end (tag_names);
 	
 	return tags;
+}
+
+- (void)removeUnlikelyCandidates
+{
+	NSXMLNode *elem = self.html;
+	
+	do {
+		if ([elem kind] == NSXMLElementKind) {
+			NSString *s = [NSString stringWithFormat:@"%@ %@", 
+						   [elem cssNamesForAttributeWithName:@"class"], 
+						   [elem cssNamesForAttributeWithName:@"id"]];
+			//[self debug:s];
+			
+			NSRange sRange = NSMakeRange(0, [s length]);
+			
+			if (([unlikelyCandidatesRe rangeOfFirstMatchInString:s options:0 range:sRange].location != NSNotFound) 
+				&& ([okMaybeItsACandidateRe rangeOfFirstMatchInString:s options:0 range:sRange].location == NSNotFound)
+				&& ![elem.name isEqualToString:@"body"]) {
+				//[self debug:[NSString stringWithFormat:@"Removing unlikely candidate - %@", elem]];
+				[elem detach];
+			}
+		}
+		
+	} while ((elem = [elem nextNode]) != nil);
 }
 
 - (NSXMLDocument *)summaryXMLDocument;
@@ -76,7 +119,9 @@
 		for (NSXMLNode *i in nodes) {
 			[i addCSSName:@"readabilityBody" toAttributeWithName:@"id"];
 		}
-	
+		
+		if (ruthless)  [self removeUnlikelyCandidates];
+
 		return self.html;
 	}
 }
