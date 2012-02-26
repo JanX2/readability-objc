@@ -12,12 +12,13 @@
 
 - (void)addCSSName:(NSString *)cssName toAttributeWithName:(NSString *)attributeName;
 {
-	if ([self isKindOfClass:[NSXMLElement class]]) {
+	if ([self kind] == NSXMLElementKind) {
 		NSXMLElement *selfElement = (NSXMLElement *)self;
 		NSXMLNode *attribute = [selfElement attributeForName:attributeName];
 		if (attribute == nil) {
 			attribute = [NSXMLNode attributeWithName:attributeName 
 										 stringValue:cssName];
+			[selfElement addAttribute:attribute];
 		} else {
 			NSString *attributeStringValue = [attribute stringValue];
 			if ([attributeStringValue rangeOfString:cssName 
