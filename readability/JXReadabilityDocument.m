@@ -182,6 +182,17 @@ NSString * const	divToPElements =		@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul
 		
 		NSArray *nodes;
 		
+		// Remove comment nodes
+		NSXMLNode *thisNode = self.html;
+		NSXMLNode *prevNode = nil;
+		while (thisNode != nil) {
+			if ((prevNode != nil) && ([prevNode kind] == NSXMLCommentKind)) {
+				[prevNode detach];
+			}
+			prevNode = thisNode;
+			thisNode = [thisNode nextNode];
+		}
+		
 		// Delete non-content nodes
 		nodes = [self tagsIn:self.html withNames:@"noscript", @"script", @"style", nil];
 		for (NSXMLNode *i in nodes) {
