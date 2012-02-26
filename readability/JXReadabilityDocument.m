@@ -183,7 +183,7 @@ NSString * const	divToPElements =		@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul
 		NSArray *nodes;
 		
 		// Delete non-content nodes
-		nodes = [self tagsIn:self.html withNames:@"script", @"style", nil];
+		nodes = [self tagsIn:self.html withNames:@"noscript", @"script", @"style", nil];
 		for (NSXMLNode *i in nodes) {
 			[i detach];
 		}
