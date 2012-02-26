@@ -15,9 +15,9 @@
 
 NSString * const	unlikelyCandidates = 	@"combx|comment|community|disqus|extra|foot|header|menu|remark|rss|shoutbox|sidebar|sponsor|ad-break|agegate|pagination|pager|popup|tweet|twitter";
 NSString * const	okMaybeItsACandidate = 	@"and|article|body|column|main|shadow";
-NSString * const	positiveNames = 	@"article|body|content|entry|hentry|main|page|pagination|post|text|blog|story";
-NSString * const	negativeNames = 	@"combx|comment|com-|contact|foot|footer|footnote|masthead|media|meta|outbrain|promo|related|scroll|shoutbox|sidebar|sponsor|shopping|tags|tool|widget";
-NSString * const	divToPElements = 	@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul)";
+NSString * const	positiveNames =			@"article|body|content|entry|hentry|main|page|pagination|post|text|blog|story";
+NSString * const	negativeNames =			@"combx|comment|com-|contact|foot|footer|footnote|masthead|media|meta|outbrain|promo|related|scroll|shoutbox|sidebar|sponsor|shopping|tags|tool|widget";
+NSString * const	divToPElements =		@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul)";
 
 
 @implementation JXReadabilityDocument
