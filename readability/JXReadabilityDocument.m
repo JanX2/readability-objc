@@ -98,6 +98,80 @@ NSString * const	divToPElements =		@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul
 	} while ((elem = [elem nextNode]) != nil);
 }
 
+- (void)transformMisusedDivsIntoParagraphs
+{
+	NSArray *nodes;
+	
+	NSString *s;
+	
+	nodes = [self tagsIn:self.html withNames:@"div", nil];
+	for (NSXMLNode *elem in nodes) {
+		// Transform <div>s that do not contain other block elements into <p>s
+		s = [elem XMLString];
+		if ([divToPElementsRe rangeOfFirstMatchInString:s
+												options:0 
+												  range:NSMakeRange(0, [s length])].location == NSNotFound) {
+			//[self debug:[NSString stringWithFormat:@"Altering %@ to p", elem]];
+			[elem setName:@"p"];
+			//NSLog(@"Fixed element %@", elem);
+		}
+	}
+	
+	NSCharacterSet *whitespaceAndNewlineCharacterSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+	NSXMLElement *p;
+	
+	nodes = [self tagsIn:self.html withNames:@"div", nil];
+	for (NSXMLElement *elem in nodes) { // div tags always are elements
+		s = [elem stringValue];
+		if (([s length] != 0) 
+			&& ([[s stringByTrimmingCharactersInSet:whitespaceAndNewlineCharacterSet] length] != 0)) { // using -ws_isBlankString would be faster
+			
+			p = [NSXMLNode elementWithName:@"p" 
+							   stringValue:s];
+			
+			[elem setStringValue:@""];
+			[elem insertChild:p atIndex:0];
+			//NSLog(@"Appended %@ to %@", p, elem);
+		}
+		
+		[[elem children] enumerateObjectsWithOptions:NSEnumerationReverse 
+										  usingBlock:^(id obj, NSUInteger pos, BOOL *stop) {
+											  NSXMLNode *child = obj;
+											  NSString *childTailString;
+											  NSXMLNode *tailNode;
+											  NSXMLElement *paragraph;
+											  
+											  if ([child kind] != NSXMLTextKind) {
+												  
+												  tailNode = [child nextSibling];
+												  if ((tailNode == nil) || ([tailNode kind] != NSXMLTextKind)) {
+													  childTailString = @"";
+												  } else {
+													  childTailString = [tailNode stringValue];
+												  }
+												  
+												  if (([childTailString length] != 0) 
+													  && ([[childTailString stringByTrimmingCharactersInSet:whitespaceAndNewlineCharacterSet] length] != 0)) { // using -ws_isBlankString would be faster
+													  
+													  paragraph = [NSXMLNode elementWithName:@"p" 
+																				 stringValue:childTailString];
+													  
+													  [tailNode detach]; // We could get [tailNode index] and insert there after detaching
+													  [elem insertChild:paragraph atIndex:(pos + 1)];
+													  //NSLog(@"Appended %@ to %@", p, elem);
+												  }
+												  
+											  }
+											  
+											  if ([[child name] isEqualToString:@"br"]) {
+												  [child detach];
+												  //NSLog(@"Dropped <br> at %@", elem);
+											  }
+										  }];
+		
+	}	
+}
+
 - (NSXMLDocument *)summaryXMLDocument;
 {
 	if (self.html == nil)  return nil;
@@ -121,7 +195,9 @@ NSString * const	divToPElements =		@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul
 		}
 		
 		if (ruthless)  [self removeUnlikelyCandidates];
-
+		
+		[self transformMisusedDivsIntoParagraphs];
+		
 		return self.html;
 	}
 }
