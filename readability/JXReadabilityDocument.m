@@ -19,6 +19,9 @@ NSString * const	positiveNames =			@"article|body|content|entry|hentry|main|page
 NSString * const	negativeNames =			@"combx|comment|com-|contact|foot|footer|footnote|masthead|media|meta|outbrain|promo|related|scroll|shoutbox|sidebar|sponsor|shopping|tags|tool|widget";
 NSString * const	divToPElements =		@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul)";
 
+@interface JXReadabilityDocument (Private)
+- (NSArray *)tagsIn:(NSXMLNode *)node withNames:(NSString *)firstTagName, ... NS_REQUIRES_NIL_TERMINATION;
+@end
 
 @implementation JXReadabilityDocument
 
