@@ -325,17 +325,19 @@ NSString * const	sentenceEnd =							@"\\.( |$)";
 		
 		if (sibling == bestElem)  append = YES;
 		
-		siblingKey = [HashableElement elementForNode:sibling];
-		siblingScoreDict = [candidates objectForKey:siblingKey];
-		if ((append == NO)
-			&& (siblingScoreDict != nil) 
-			&& ([[siblingScoreDict objectForKey:@"contentScore"] floatValue] >= siblingScoreThreshold)) {
-			append = YES;
+		if (append == NO) {
+			siblingKey = [HashableElement elementForNode:sibling];
+			siblingScoreDict = [candidates objectForKey:siblingKey];
+			if ((siblingScoreDict != nil) 
+				&& ([[siblingScoreDict objectForKey:@"contentScore"] floatValue] >= siblingScoreThreshold)) {
+				append = YES;
+			}
 		}
 		
 		if ((append == NO)
 			&& [sibling.name isEqualToString:@"p"]
 			&& ([sibling kind] == NSXMLElementKind)) {
+			
 			float linkDensity = [self getLinkDensity:(NSXMLElement *)sibling];
 			NSString *nodeContent = [sibling stringValue];
 			nodeContent = (nodeContent == nil) ? @"" : nodeContent;
