@@ -76,6 +76,9 @@ NSString * const	tabRun =								@"[ \t]{2,}";
 	[negativeRe release];
 	[divToPElementsRe release];
 	
+	[newlinePlusSurroundingwhitespaceRe release];
+	[tabRunRe release];
+	
 	[super dealloc];
 }
 
