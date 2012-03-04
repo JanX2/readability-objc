@@ -38,6 +38,8 @@ NSString * const	divToPElements =		@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul
 		self.html = aDoc;
 		self.options = [NSMutableDictionary dictionary];
 		
+		whitespaceAndNewlineCharacterSet = [[NSCharacterSet whitespaceAndNewlineCharacterSet] retain];
+		
 		unlikelyCandidatesRe = 		[[NSRegularExpression alloc] initWithPattern:unlikelyCandidates		 options:0 error:NULL];
 		okMaybeItsACandidateRe = 	[[NSRegularExpression alloc] initWithPattern:okMaybeItsACandidate	 options:0 error:NULL];
 		positiveRe = 				[[NSRegularExpression alloc] initWithPattern:positiveNames			 options:0 error:NULL];
@@ -52,6 +54,8 @@ NSString * const	divToPElements =		@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul
 {
 	self.html = nil;
 	self.options = nil;
+	
+	[whitespaceAndNewlineCharacterSet release];
 	
 	[unlikelyCandidatesRe release];
 	[okMaybeItsACandidateRe release];
@@ -120,7 +124,6 @@ NSString * const	divToPElements =		@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul
 		}
 	}
 	
-	NSCharacterSet *whitespaceAndNewlineCharacterSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 	NSXMLElement *p;
 	
 	nodes = [self tagsIn:self.html withNames:@"div", nil];

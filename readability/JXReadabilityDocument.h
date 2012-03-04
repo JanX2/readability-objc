@@ -15,6 +15,8 @@
 	
 	NSMutableDictionary *	options;
 
+	NSCharacterSet *		whitespaceAndNewlineCharacterSet;
+	
 	NSRegularExpression *	unlikelyCandidatesRe;
 	NSRegularExpression *	okMaybeItsACandidateRe;
 	NSRegularExpression *	positiveRe;
