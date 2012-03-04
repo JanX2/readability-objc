@@ -25,6 +25,7 @@
 
 	NSRegularExpression *	newlinePlusSurroundingwhitespaceRe;
 	NSRegularExpression *	tabRunRe;
+	NSRegularExpression *	sentenceEndRe;
 }
 
 @property (nonatomic, copy) NSString *input;

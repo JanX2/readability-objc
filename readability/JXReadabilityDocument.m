@@ -22,6 +22,21 @@ NSString * const	divToPElements =		@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul
 
 NSString * const	newlinePlusSurroundingwhitespace =		@"\\s*\n\\s*";
 NSString * const	tabRun =								@"[ \t]{2,}";
+NSString * const	sentenceEnd =							@"\\.( |$)";
+
+
+@interface HashableElement : NSObject <NSCopying> {
+	NSXMLNode *_node;
+	NSString *_path;
+}
+
+@property (nonatomic, retain) NSXMLNode *node;
+@property (nonatomic, retain) NSString *path;
+
++ (id)elementForNode:(NSXMLNode *)aNode;
+
+- (id)initWithNode:(NSXMLNode *)aNode;
+@end
 
 
 @interface JXReadabilityDocument (Private)
@@ -58,6 +73,9 @@ NSString * const	tabRun =								@"[ \t]{2,}";
 		tabRunRe = [[NSRegularExpression alloc] initWithPattern:tabRun 
 														options:0 
 														  error:NULL];
+		sentenceEndRe = [[NSRegularExpression alloc] initWithPattern:sentenceEnd 
+															 options:0 
+															   error:NULL];
 	}
 	
 	return self;
@@ -78,6 +96,7 @@ NSString * const	tabRun =								@"[ \t]{2,}";
 	
 	[newlinePlusSurroundingwhitespaceRe release];
 	[tabRunRe release];
+	[sentenceEndRe release];
 	
 	[super dealloc];
 }
@@ -288,6 +307,85 @@ NSString * const	tabRun =								@"[ \t]{2,}";
 			nil];
 }
 
+- (NSXMLElement *)getArticleForCandidates:(NSDictionary *)candidates andBestCandidate:(NSDictionary *)bestCandidate
+{
+	// Now that we have the top candidate, look through its siblings for content that might also be related
+	// Things like preambles, content split by ads that we removed, etc.
+
+	float siblingScoreThreshold = MAX(10.0, ([[bestCandidate objectForKey:@"contentScore"] floatValue] * 0.2));
+	NSXMLElement *output = [NSXMLNode elementWithName:@"div"];
+	NSXMLNode *bestElem = [bestCandidate objectForKey:@"elem"];
+	
+	BOOL append;
+	NSDictionary *siblingScoreDict;
+	HashableElement *siblingKey;
+	for (NSXMLNode *sibling in [[bestElem parent] children]) {
+		//if isinstance(sibling, NavigableString): continue#in lxml there no concept of simple text 
+		append = NO; 
+		
+		if (sibling == bestElem)  append = YES;
+		
+		siblingKey = [HashableElement elementForNode:sibling];
+		siblingScoreDict = [candidates objectForKey:siblingKey];
+		if ((append == NO)
+			&& (siblingScoreDict != nil) 
+			&& ([[siblingScoreDict objectForKey:@"contentScore"] floatValue] >= siblingScoreThreshold)) {
+			append = YES;
+		}
+		
+		if ((append == NO)
+			&& [sibling.name isEqualToString:@"p"]
+			&& ([sibling kind] == NSXMLElementKind)) {
+			float linkDensity = [self getLinkDensity:(NSXMLElement *)sibling];
+			NSString *nodeContent = [sibling stringValue];
+			nodeContent = (nodeContent == nil) ? @"" : nodeContent;
+			NSUInteger nodeLength = [nodeContent length];
+			
+			if ((nodeLength > 80) 
+				&& (linkDensity < 0.25)) {
+				append = YES;
+			}
+			else if ((nodeLength <= 80) 
+					 && (linkDensity == 0.0) 
+					 && ([sentenceEndRe rangeOfFirstMatchInString:nodeContent options:0 range:NSMakeRange(0, [nodeContent length])].location != NSNotFound)) {
+				append = YES;
+			}
+		}
+		
+		if (append)  [output addChild:[[sibling copy] autorelease]];
+	}				
+	
+	//if output is not None: 
+	//	output.append(bestElem)
+
+	return output;
+	
+}
+
+- (NSDictionary *)selectBestCandidate:(NSDictionary *)candidates
+{
+	NSArray *allCandidates = [candidates allValues];
+	if ([allCandidates count] == 0)  return nil;
+	
+	NSSortDescriptor *contentScoreDescendingDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"contentScore" 
+																					   ascending:NO];
+	
+	NSArray *sortedCandidates = [allCandidates sortedArrayUsingDescriptors:
+								 [NSArray arrayWithObject:contentScoreDescendingDescriptor]];
+	
+#if 0
+	NSXMLElement *elem;
+	NSArray *topFive = ([sortedCandidates count] >= 5) ? [sortedCandidates subarrayWithRange:NSMakeRange(0, 5)] : sortedCandidates;
+	for (NSDictionary *candidate in topFive) {
+		elem = [candidate objectForKey:@"elem"];
+		[self debug:[NSString stringWithFormat:@"Top 5 : %6.3f %@", [candidate objectForKey:@"contentScore"], [elem description]]];
+	}
+#endif
+	
+	NSDictionary *bestCandidate = [sortedCandidates objectAtIndex:0];
+	return bestCandidate;
+}
+
 - (float)getLinkDensity:(NSXMLElement *)elem
 {
 	NSUInteger linkLength = 0;
@@ -314,6 +412,7 @@ NSString * const	tabRun =								@"[ \t]{2,}";
 	NSUInteger innerTextLen;
 
 	NSMutableArray *ordered = [NSMutableArray array];
+	HashableElement *hashableElement;
 	for (NSXMLElement *elem in [self tagsIn:self.html withNames:@"p", @"pre", @"td", nil]) {
 		parentNode = (NSXMLElement *)[elem parent];
 		if (parentNode == nil)  continue;
@@ -325,19 +424,24 @@ NSString * const	tabRun =								@"[ \t]{2,}";
 		
 		// If this paragraph is less than 25 characters, don't even count it.
 		if (innerTextLen < minLen)  continue;
-
-		if ([candidates objectForKey:parentNode] == nil) { 
-			[candidates setObject:[self scoreNode:parentNode] forKey:parentNode];
+		
+		hashableElement = [HashableElement elementForNode:parentNode];
+		if ([candidates objectForKey:hashableElement] == nil) { 
+			[candidates setObject:[self scoreNode:parentNode] 
+						   forKey:hashableElement];
 			[ordered addObject:parentNode];
 		}
 		
-		if ((grandParentNode != nil) 
-			&& ([candidates objectForKey:grandParentNode] == nil)) {
-			[candidates setObject:[self scoreNode:grandParentNode] forKey:grandParentNode];
-			[ordered addObject:grandParentNode];
+		if (grandParentNode != nil) {
+			hashableElement = [HashableElement elementForNode:grandParentNode];
+			if ([candidates objectForKey:hashableElement] == nil) {
+				[candidates setObject:[self scoreNode:grandParentNode] 
+							   forKey:hashableElement];
+				[ordered addObject:grandParentNode];
+			}
 		}
 
-		float contentScore = 1;
+		float contentScore = 1.0;
 		contentScore += [[innerText componentsSeparatedByString:@","] count]; // CHANGEME: count the "," directly
 		contentScore += MIN((innerTextLen / 100), 3);
 		//if elem not in candidates:
@@ -414,8 +518,112 @@ NSString * const	tabRun =								@"[ \t]{2,}";
 		NSDictionary *candidates = [self scoreParagraphs];
 		//NSLog(@"%@", candidates);
 		
+		NSDictionary *bestCandidate = [self selectBestCandidate:candidates];
+
+		NSXMLNode *article = nil;
+		
+		if (bestCandidate != nil) {
+					article = [self getArticleForCandidates:candidates 
+										   andBestCandidate:bestCandidate];
+		}
+		else {
+			if (ruthless) {
+				NSLog(@"Ruthless removal did not work. ");
+				ruthless = NO;
+				[self debug:@"Ended up stripping too much - going for a safer _parse"];
+				// try again
+				continue;
+			}
+			else {
+				NSLog(@"Ruthless and lenient parsing did not work. Returning raw html");
+				if ([self.html kind] == NSXMLElementKind) {
+					article = [[(NSXMLElement *)self.html elementsForName:@"body"] objectAtIndex:0];
+				}
+				if (article == nil) {
+					article = self.html;
+				}
+				
+			}
+		}
+		
 		return self.html;
+
 	}
+
+}
+
+@end
+
+
+@implementation HashableElement
+
+@synthesize node = _node;
+@synthesize path = _path;
+
++ (id)elementForNode:(NSXMLNode *)aNode;
+{
+	return [[[self alloc] initWithNode:aNode] autorelease];
+}
+
+- (id)initWithNode:(NSXMLNode *)aNode;
+{
+	self = [super init];
+	if (self) {
+		self.node = aNode;
+		self.path = [aNode XPath];
+	}
+	return self;
+	
+}
+
+- (void)dealloc
+{
+    self.node = nil;
+    self.path = nil;
+	
+	[super dealloc];
+}
+
+- (id)copyWithZone:(NSZone *)zone
+{
+	id newElement = [[[self class] allocWithZone:zone]
+					 initWithNode:self.node];
+	
+	return newElement;
+}
+
+
+- (NSString *)description
+{
+	return [_node description];
+}
+
+- (BOOL)isEqual:(id)obj
+{
+	if (obj == nil) {
+		return NO;
+	}
+	
+	if (![obj isKindOfClass:[HashableElement class]]) {
+		return NO;
+	}
+	
+	HashableElement *p = (HashableElement *)obj;
+	return [p.node isEqualTo:self.node] && [p.path isEqualToString:self.path];
+}
+
+- (BOOL)isEqualToElement:(HashableElement *)p
+{
+	if (p == nil) {
+		return NO;
+	}
+	
+	return [p.node isEqualTo:self.node] && [p.path isEqualToString:self.path];
+}
+
+- (NSUInteger)hash
+{
+	return [_path hash];
 }
 
 @end
