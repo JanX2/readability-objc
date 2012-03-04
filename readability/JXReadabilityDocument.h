@@ -22,6 +22,9 @@
 	NSRegularExpression *	positiveRe;
 	NSRegularExpression *	negativeRe;
 	NSRegularExpression *	divToPElementsRe;
+
+	NSRegularExpression *	newlinePlusSurroundingwhitespaceRe;
+	NSRegularExpression *	tabRunRe;
 }
 
 @property (nonatomic, copy) NSString *input;

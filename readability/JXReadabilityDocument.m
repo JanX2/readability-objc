@@ -19,6 +19,11 @@ NSString * const	positiveNames =			@"article|body|content|entry|hentry|main|page
 NSString * const	negativeNames =			@"combx|comment|com-|contact|foot|footer|footnote|masthead|media|meta|outbrain|promo|related|scroll|shoutbox|sidebar|sponsor|shopping|tags|tool|widget";
 NSString * const	divToPElements =		@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul)";
 
+
+NSString * const	newlinePlusSurroundingwhitespace =		@"\\s*\n\\s*";
+NSString * const	tabRun =								@"[ \t]{2,}";
+
+
 @interface JXReadabilityDocument (Private)
 - (NSArray *)tagsIn:(NSXMLNode *)node withNames:(NSString *)firstTagName, ... NS_REQUIRES_NIL_TERMINATION;
 @end
@@ -45,6 +50,14 @@ NSString * const	divToPElements =		@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul
 		positiveRe = 				[[NSRegularExpression alloc] initWithPattern:positiveNames			 options:0 error:NULL];
 		negativeRe = 				[[NSRegularExpression alloc] initWithPattern:negativeNames			 options:0 error:NULL];
 		divToPElementsRe = 			[[NSRegularExpression alloc] initWithPattern:divToPElements			 options:0 error:NULL];
+		
+		newlinePlusSurroundingwhitespaceRe = 
+		[[NSRegularExpression alloc] initWithPattern:newlinePlusSurroundingwhitespace
+											 options:0 
+											   error:NULL];
+		tabRunRe = [[NSRegularExpression alloc] initWithPattern:tabRun 
+														options:0 
+														  error:NULL];
 	}
 	
 	return self;
@@ -79,6 +92,11 @@ NSString * const	divToPElements =		@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul
 	va_end (tag_names);
 	
 	return tags;
+}
+
+- (void)debug:(id)a
+{
+	if ([(NSNumber *)[self.options objectForKey:@"debug"] boolValue])  NSLog(@"%@", a);
 }
 
 - (void)removeUnlikelyCandidates
@@ -178,6 +196,180 @@ NSString * const	divToPElements =		@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul
 	}	
 }
 
+- (NSString *)clean:(NSString *)_text
+{
+	NSMutableString *text = [_text mutableCopy];
+	
+	[newlinePlusSurroundingwhitespaceRe replaceMatchesInString:text 
+													   options:0 
+														 range:NSMakeRange(0, [text length]) 
+												  withTemplate:@"\n"];
+	
+	[tabRunRe replaceMatchesInString:text 
+							 options:0 
+							   range:NSMakeRange(0, [text length]) 
+						withTemplate:@" "];
+	
+	CFStringTrimWhitespace((CFMutableStringRef)text);
+	
+	return [text autorelease];
+}
+
+- (NSUInteger)textLength:(NSXMLElement *)i
+{
+	NSString *s = [i stringValue];
+	NSString *cleanS = (s != nil) ? [self clean:s] : @"";
+	return [cleanS length];
+}
+
+- (float)classWeight:(NSXMLElement *)e
+{
+	NSXMLNode *attribute;
+	
+	float weight = 0;
+	
+	if ((attribute = [e attributeForName:@"class"]) != nil) {
+		NSString *s = [attribute stringValue];
+		NSRange sRange = NSMakeRange(0, [s length]);
+		
+		if ([negativeRe rangeOfFirstMatchInString:s options:0 range:sRange].location != NSNotFound)  weight -= 25;
+		
+		if ([positiveRe rangeOfFirstMatchInString:s options:0 range:sRange].location != NSNotFound)  weight += 25;
+	}
+	
+	if ((attribute = [e attributeForName:@"id"]) != nil) {
+		NSString *s = [attribute stringValue];
+		NSRange sRange = NSMakeRange(0, [s length]);
+		
+		if ([negativeRe rangeOfFirstMatchInString:s options:0 range:sRange].location != NSNotFound)  weight -= 25;
+		
+		if ([positiveRe rangeOfFirstMatchInString:s options:0 range:sRange].location != NSNotFound)  weight += 25;
+	}
+	
+	return weight;
+}
+
+- (NSMutableDictionary *)scoreNode:(NSXMLElement *)elem
+{
+	static BOOL firstRun = YES;
+	static NSSet *preTDBlockquote = nil;
+	static NSSet *addressEtc = nil;
+	static NSSet *headlines = nil;
+	
+	if (firstRun) {
+		preTDBlockquote = [[NSSet alloc] initWithObjects:@"pre", @"td", @"blockquote", nil];
+		addressEtc = [[NSSet alloc] initWithObjects:@"address", @"ol", @"ul", @"dl", @"dd", @"dt", @"li", @"form", nil];
+		headlines = [[NSSet alloc] initWithObjects:@"h1", @"h2", @"h3", @"h4", @"h5", @"h6", @"th", nil];
+		firstRun = NO;
+	}
+	
+	float contentScore = [self classWeight:elem];
+	NSString *name = [elem.name lowercaseString];
+	if ([name isEqualToString:@"div"]) {
+		contentScore += 5;
+	}
+	else if ([preTDBlockquote containsObject:name]) {
+		contentScore += 3;
+	}
+	else if ([addressEtc containsObject:name]) {
+		contentScore -= 3;
+	}
+	else if ([headlines containsObject:name]) {
+		contentScore -= 5;
+	}
+	
+	return [NSMutableDictionary dictionaryWithObjectsAndKeys: 
+			[NSNumber numberWithFloat:contentScore], @"contentScore", 
+			elem, @"elem", 
+			nil];
+}
+
+- (float)getLinkDensity:(NSXMLElement *)elem
+{
+	NSUInteger linkLength = 0;
+	for (NSXMLNode *i in [elem nodesForXPath:@".//a" error:NULL]) {
+		linkLength += [[i stringValue] length];
+		//if len(elem.findall(".//div") or elem.findall(".//p")):
+		//	linkLength = linkLength
+	}
+	NSUInteger totalLength = [self textLength:elem];
+	return (float)linkLength / MAX(totalLength, 1);
+}
+
+- (NSDictionary *)scoreParagraphs
+{
+	NSNumber *minLength = [self.options objectForKey:@"minTextLength"];	
+	NSUInteger minLen = (minLength != nil) ? [minLength unsignedIntegerValue] : TEXT_LENGTH_THRESHOLD;
+	
+	NSMutableDictionary *candidates = [NSMutableDictionary dictionary];
+	
+	//[self debug:[self tagsIn:self.html withNames:@"div", nil]];
+	
+	NSXMLElement *parentNode, *grandParentNode; // parents have to be elements
+	NSString *elemTextContent, *innerText;
+	NSUInteger innerTextLen;
+
+	NSMutableArray *ordered = [NSMutableArray array];
+	for (NSXMLElement *elem in [self tagsIn:self.html withNames:@"p", @"pre", @"td", nil]) {
+		parentNode = (NSXMLElement *)[elem parent];
+		if (parentNode == nil)  continue;
+		grandParentNode = (NSXMLElement *)[parentNode parent];
+		
+		elemTextContent = [elem stringValue];
+		innerText = (elemTextContent != nil) ? [self clean:elemTextContent] : @"";
+		innerTextLen = [innerText length];
+		
+		// If this paragraph is less than 25 characters, don't even count it.
+		if (innerTextLen < minLen)  continue;
+
+		if ([candidates objectForKey:parentNode] == nil) { 
+			[candidates setObject:[self scoreNode:parentNode] forKey:parentNode];
+			[ordered addObject:parentNode];
+		}
+		
+		if ((grandParentNode != nil) 
+			&& ([candidates objectForKey:grandParentNode] == nil)) {
+			[candidates setObject:[self scoreNode:grandParentNode] forKey:grandParentNode];
+			[ordered addObject:grandParentNode];
+		}
+
+		float contentScore = 1;
+		contentScore += [[innerText componentsSeparatedByString:@","] count]; // CHANGEME: count the "," directly
+		contentScore += MIN((innerTextLen / 100), 3);
+		//if elem not in candidates:
+		//	candidates[elem] = self.scoreNode(elem)
+				
+		//WTF? candidates[elem]['contentScore'] += contentScore
+		float tempScore;
+		NSMutableDictionary *scoreDict;
+		scoreDict = [candidates objectForKey:parentNode];
+		tempScore = [[scoreDict objectForKey:@"contentScore"] floatValue] + contentScore;
+		[scoreDict setObject:[NSNumber numberWithFloat:tempScore] forKey:@"contentScore"];
+		if (grandParentNode != nil) {
+			scoreDict = [candidates objectForKey:grandParentNode];
+			tempScore = [[scoreDict objectForKey:@"contentScore"] floatValue] + contentScore / 2.0;
+			[scoreDict setObject:[NSNumber numberWithFloat:tempScore] forKey:@"contentScore"];
+		}
+	}
+	
+	// Scale the final candidates score based on link density. Good content should have a
+	// relatively small link density (5% or less) and be mostly unaffected by this operation.
+	NSMutableDictionary *candidate;
+	float ld;
+	float score;
+	
+	for (NSXMLElement *elem in ordered) {
+		candidate = [candidates objectForKey:elem];
+		ld = [self getLinkDensity:elem];
+		score = [[candidate objectForKey:@"contentScore"] floatValue];
+		//[self debug:[NSString stringWithFormat:@"Candid: %6.3f %s link density %.3f -> %6.3f", score, [elem description], ld, score*(1-ld)]];
+		score *= (1 - ld);
+		[candidate setObject:[NSNumber numberWithFloat:score] forKey:@"contentScore"];
+	}
+	
+	return candidates;
+}
+
 - (NSXMLDocument *)summaryXMLDocument;
 {
 	if (self.html == nil)  return nil;
@@ -214,6 +406,9 @@ NSString * const	divToPElements =		@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul
 		if (ruthless)  [self removeUnlikelyCandidates];
 		
 		[self transformMisusedDivsIntoParagraphs];
+		
+		NSDictionary *candidates = [self scoreParagraphs];
+		//NSLog(@"%@", candidates);
 		
 		return self.html;
 	}
