@@ -86,8 +86,9 @@ NSString * const	tabRun =								@"[ \t]{2,}";
 	
 	va_list tag_names;
 	va_start (tag_names, firstTagName);
+	// Original XPath: @".//%@". Alternative XPath: @".//*[matches(name(),'%@','i')]"
     for (NSString *tagName = firstTagName; tagName != nil; tagName = va_arg(tag_names, NSString *)) {
-        [tags addObjectsFromArray:[node nodesForXPath:[NSString stringWithFormat:@".//%@", tagName] error:NULL]];
+        [tags addObjectsFromArray:[node nodesForXPath:[NSString stringWithFormat:@".//*[lower-case(name())='%@']", tagName] error:NULL]];
     }
 	va_end (tag_names);
 	
