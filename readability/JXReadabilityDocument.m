@@ -27,15 +27,13 @@ NSString * const	sentenceEnd =							@"\\.( |$)";
 
 @interface HashableElement : NSObject <NSCopying> {
 	NSXMLNode *_node;
-	NSString *_path;
 }
 
 @property (nonatomic, retain) NSXMLNode *node;
-@property (nonatomic, retain) NSString *path;
 
 + (id)elementForNode:(NSXMLNode *)aNode;
-
 - (id)initWithNode:(NSXMLNode *)aNode;
+
 @end
 
 
@@ -560,7 +558,6 @@ NSString * const	sentenceEnd =							@"\\.( |$)";
 @implementation HashableElement
 
 @synthesize node = _node;
-@synthesize path = _path;
 
 + (id)elementForNode:(NSXMLNode *)aNode;
 {
@@ -572,16 +569,13 @@ NSString * const	sentenceEnd =							@"\\.( |$)";
 	self = [super init];
 	if (self) {
 		self.node = aNode;
-		self.path = [aNode XPath];
 	}
 	return self;
-	
 }
 
 - (void)dealloc
 {
     self.node = nil;
-    self.path = nil;
 	
 	[super dealloc];
 }
@@ -597,35 +591,33 @@ NSString * const	sentenceEnd =							@"\\.( |$)";
 
 - (NSString *)description
 {
-	return [_node description];
+	return [self.node description];
 }
 
 - (BOOL)isEqual:(id)obj
 {
-	if (obj == nil) {
-		return NO;
-	}
-	
-	if (![obj isKindOfClass:[HashableElement class]]) {
-		return NO;
-	}
+	if (obj == nil)  return NO;
+	if (![obj isKindOfClass:[HashableElement class]])  return NO;
 	
 	HashableElement *p = (HashableElement *)obj;
-	return [p.node isEqualTo:self.node] && [p.path isEqualToString:self.path];
+	NSXMLNode *pNode = p.node;
+	NSXMLNode *selfNode = self.node;
+	return [pNode isEqualTo:selfNode] && [pNode.children isEqual:selfNode.children];
 }
 
 - (BOOL)isEqualToElement:(HashableElement *)p
 {
-	if (p == nil) {
-		return NO;
-	}
+	if (p == nil)  return NO;
 	
-	return [p.node isEqualTo:self.node] && [p.path isEqualToString:self.path];
+	NSXMLNode *pNode = p.node;
+	NSXMLNode *selfNode = self.node;
+	return [pNode isEqualTo:selfNode] && [pNode.children isEqual:selfNode.children];
 }
 
 - (NSUInteger)hash
 {
-	return [_path hash];
+	NSXMLNode *selfNode = self.node;
+	return ([selfNode hash] ^ [selfNode.children hash]);
 }
 
 @end
