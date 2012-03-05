@@ -150,8 +150,8 @@ int main(int argc, const char * argv[])
 		else {
 			BOOL OK;
 			
-			if (doc != nil)	{
-				NSData *docData = [doc XMLDataWithOptions:(contentKind | NSXMLNodePrettyPrint)];
+			if (summaryDoc != nil)	{
+				NSData *docData = [summaryDoc XMLDataWithOptions:(contentKind | NSXMLNodePrettyPrint)];
 				OK = [docData writeToFile:output  
 							 options:NSDataWritingAtomic 
 							   error:&error];

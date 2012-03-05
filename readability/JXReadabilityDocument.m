@@ -8,6 +8,7 @@
 
 #import "JXReadabilityDocument.h"
 
+#import "NSString+Counting.h"
 #import "NSXMLNode+HTMLUtilities.h"
 
 #define TEXT_LENGTH_THRESHOLD	25
@@ -23,6 +24,10 @@ NSString * const	divToPElements =		@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul
 NSString * const	newlinePlusSurroundingwhitespace =		@"\\s*\n\\s*";
 NSString * const	tabRun =								@"[ \t]{2,}";
 NSString * const	sentenceEnd =							@"\\.( |$)";
+
+
+// Original XPath: @".//%@". Alternative XPath: @".//*[matches(name(),'%@','i')]"
+NSString * const	tagNameXPath = @".//*[lower-case(name())='%@']";
 
 
 @interface HashableElement : NSObject <NSCopying> {
@@ -106,9 +111,29 @@ NSString * const	sentenceEnd =							@"\\.( |$)";
 	
 	va_list tag_names;
 	va_start (tag_names, firstTagName);
-	// Original XPath: @".//%@". Alternative XPath: @".//*[matches(name(),'%@','i')]"
     for (NSString *tagName = firstTagName; tagName != nil; tagName = va_arg(tag_names, NSString *)) {
-        [tags addObjectsFromArray:[node nodesForXPath:[NSString stringWithFormat:@".//*[lower-case(name())='%@']", tagName] error:NULL]];
+        [tags addObjectsFromArray:
+		 [node nodesForXPath:[NSString stringWithFormat:tagNameXPath, tagName] 
+					   error:NULL]
+		 ];
+    }
+	va_end (tag_names);
+	
+	return tags;
+}
+
+- (NSArray *)reverseTagsIn:(NSXMLNode *)node withNames:(NSString *)firstTagName, ...
+{
+    NSMutableArray *tags = [NSMutableArray array];
+	
+	va_list tag_names;
+	va_start (tag_names, firstTagName);
+    for (NSString *tagName = firstTagName; tagName != nil; tagName = va_arg(tag_names, NSString *)) {
+        [tags addObjectsFromArray:
+		 [[[node nodesForXPath:[NSString stringWithFormat:tagNameXPath, tagName] 
+						 error:NULL]
+		   reverseObjectEnumerator] allObjects]
+		];
     }
 	va_end (tag_names);
 	
@@ -117,7 +142,7 @@ NSString * const	sentenceEnd =							@"\\.( |$)";
 
 - (void)debug:(id)a
 {
-	if ([(NSNumber *)[self.options objectForKey:@"debug"] boolValue])  NSLog(@"%@", a);
+	/*if ([(NSNumber *)[self.options objectForKey:@"debug"] boolValue])  */NSLog(@"%@", a);
 }
 
 - (void)removeUnlikelyCandidates
@@ -236,11 +261,16 @@ NSString * const	sentenceEnd =							@"\\.( |$)";
 	return [text autorelease];
 }
 
-- (NSUInteger)textLength:(NSXMLElement *)i
+- (NSUInteger)textLength:(NSXMLNode *)i
 {
-	NSString *s = [i stringValue];
-	NSString *cleanS = (s != nil) ? [self clean:s] : @"";
-	return [cleanS length];
+	if ([i kind] == NSXMLElementKind) {
+		NSString *s = [i stringValue];
+		NSString *cleanS = (s != nil) ? [self clean:s] : @"";
+		return [cleanS length];
+	}
+	else {
+		return 0;
+	}
 }
 
 - (float)classWeight:(NSXMLElement *)e
@@ -305,13 +335,18 @@ NSString * const	sentenceEnd =							@"\\.( |$)";
 			nil];
 }
 
-- (NSXMLElement *)getArticleForCandidates:(NSDictionary *)candidates andBestCandidate:(NSDictionary *)bestCandidate
+- (NSXMLDocument *)getArticleForCandidates:(NSDictionary *)candidates andBestCandidate:(NSDictionary *)bestCandidate
 {
 	// Now that we have the top candidate, look through its siblings for content that might also be related
 	// Things like preambles, content split by ads that we removed, etc.
 
 	float siblingScoreThreshold = MAX(10.0, ([[bestCandidate objectForKey:@"contentScore"] floatValue] * 0.2));
-	NSXMLElement *output = [NSXMLNode elementWithName:@"div"];
+	NSXMLDocument *output = [[[NSXMLDocument alloc] initWithXMLString:@"<html><body /></html>" 
+															 options:NSXMLDocumentTidyHTML 
+															   error:NULL] autorelease];
+	[output setDocumentContentKind:NSXMLDocumentXHTMLKind];
+	NSXMLElement *htmlBody = [[output nodesForXPath:@"/html/body" 
+											  error:NULL] objectAtIndex:0];
 	NSXMLNode *bestElem = [bestCandidate objectForKey:@"elem"];
 	
 	BOOL append;
@@ -352,7 +387,7 @@ NSString * const	sentenceEnd =							@"\\.( |$)";
 			}
 		}
 		
-		if (append)  [output addChild:[[sibling copy] autorelease]];
+		if (append)  [htmlBody addChild:[[sibling copy] autorelease]];
 	}				
 	
 	//if output is not None: 
@@ -478,6 +513,238 @@ NSString * const	sentenceEnd =							@"\\.( |$)";
 	return candidates;
 }
 
+NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array);
+NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
+	NSUInteger siblingsSum = 0;
+	
+	CFIndex i, c = CFArrayGetCount(array);
+	for (i = 0; i < c; i++) {
+		siblingsSum += (NSUInteger)CFArrayGetValueAtIndex(array, i);
+	}
+	
+	return siblingsSum;
+}
+
+- (NSXMLDocument *)sanitizeArticle:(NSXMLDocument *)node forCandidates:(NSDictionary *)candidates
+{
+	NSNumber *minTextLengthNum = [self.options objectForKey:@"minTextLength"];
+	NSUInteger minLen = (minTextLengthNum != nil) ? [minTextLengthNum unsignedIntegerValue] : TEXT_LENGTH_THRESHOLD;
+	for (NSXMLElement *header in [self tagsIn:node withNames:@"h1", @"h2", @"h3", @"h4", @"h5", @"h6", nil]) {
+		if ([self classWeight:header] < 0 || [self getLinkDensity:header] > 0.33) { 
+			[header detach];
+		}
+	}
+
+	for (NSXMLElement *elem in [self tagsIn:node withNames:@"form", @"iframe", @"textarea", nil]) {
+		[elem detach];
+	}
+	
+	CFMutableDictionaryRef allowed = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, NULL); // keys: HashableElement, values:raw BOOL
+	
+	NSDictionary *elDict;
+	HashableElement *hashableEl;
+	float weight;
+	NSString *tag;
+	float contentScore;
+	CFIndex kindCount;
+	NSArray *tagKinds = [NSArray arrayWithObjects:@"p", @"img", @"li", @"a", @"embed", @"input", nil];
+	NSUInteger contentLength;
+	float linkDensity;
+	NSXMLNode *parentNode;
+	NSDictionary *parentNodeDict;
+	
+	BOOL toRemove;
+	NSString *reason;
+
+	// Conditionally clean <table>s, <ul>s, and <div>s
+	for (NSXMLElement *el in [self reverseTagsIn:node withNames:@"table", @"ul", @"div", nil]) {
+		hashableEl = [HashableElement elementForNode:el];
+		
+		if (CFDictionaryContainsValue(allowed, hashableEl))  continue;
+		
+		weight = [self classWeight:el];
+		
+		elDict = [candidates objectForKey:hashableEl];
+		if (elDict != nil) {
+			contentScore = [[elDict objectForKey:@"contentScore"] floatValue];
+			//print '!',el, '-> %6.3f' % contentScore
+		}
+		else {
+			contentScore = 0;
+		}
+		
+		tag = el.name;
+
+		if ((weight + contentScore) < 0.0) {
+			[self debug:[NSString stringWithFormat:@"Cleaned %@ with score %6.3f and weight %-3s",
+						 el, contentScore, weight]];
+			[el detach];
+		}
+		else if ([[el stringValue] countOccurancesOfString:@","] < 10) {
+			CFMutableDictionaryRef counts = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, NULL); // keys: NSString, values:raw CFIndex
+
+			for (NSString *kind in tagKinds) {
+				kindCount = (CFIndex)[[node nodesForXPath:[NSString stringWithFormat:tagNameXPath, kind] 
+													error:NULL] count];
+				CFDictionaryAddValue(counts, kind, (void *)kindCount);
+			}
+			
+			if (CFDictionaryGetValueIfPresent(counts, @"li", (const void **)&kindCount)) {
+				kindCount -= 100;
+				CFDictionarySetValue(counts, @"li", (void *)kindCount);
+			}
+
+			contentLength = [self textLength:el]; // Count the text length excluding any surrounding whitespace
+			linkDensity = [self getLinkDensity:el];
+			
+			parentNode = [el parent];
+			if (parentNode != nil) {
+				
+				parentNodeDict = [candidates objectForKey:[HashableElement elementForNode:parentNode]];
+				if (parentNodeDict != nil) {
+					contentScore = [[parentNodeDict objectForKey:@"contentScore"] floatValue];
+				}
+				else {
+					contentScore = 0.0;
+				}
+				
+				//if parentNode is not None:
+				//	pweight = self.classWeight(parentNode) + contentScore
+				//	pname = describe(parentNode)
+				//else:
+				//	pweight = 0
+				//	pname = "no parent"
+				
+				toRemove = NO;
+				reason = @"";
+
+#define countsFor(A)  (CFIndex)(CFDictionaryGetValue(counts, (A)))
+				
+				//if el.tag == 'div' and counts["img"] >= 1:
+				//	continue
+				if (countsFor(@"p") 
+					&& (countsFor(@"img") > countsFor(@"p"))) {
+					reason = [NSString stringWithFormat:@"too many images (%ld)", (long)countsFor(@"img")];
+					toRemove = YES;
+				}
+				else if ((countsFor(@"li") > countsFor(@"p")) 
+						 && ![tag isEqualToString:@"ul"] 
+						 && ![tag isEqualToString:@"ol"]) {
+					reason = @"more <li>s than <p>s";
+					toRemove = YES;
+				}
+				else if (countsFor(@"input") > (countsFor(@"p") / 3)) {
+					reason = @"less than 3x <p>s than <input>s";
+					toRemove = YES;
+				}
+				else if ((contentLength < minLen) 
+						 && ((countsFor(@"img") == 0) 
+							 || (countsFor(@"img") > 2))) {
+					reason = [NSString stringWithFormat:@"too short content length %lu without a single image", (unsigned long)contentLength];
+					toRemove = YES;
+				}
+				else if (weight < 25 && linkDensity > 0.2) {
+					reason = [NSString stringWithFormat:@"too many links %.3f for its weight %.0f", linkDensity, weight];
+					toRemove = YES;
+				}
+				else if (weight >= 25 && linkDensity > 0.5) {
+					reason = [NSString stringWithFormat:@"too many links %.3f for its weight %.0f", linkDensity, weight];
+					toRemove = YES;
+				}
+				else if (((countsFor(@"embed") == 1) && (contentLength < 75)) || (countsFor(@"embed") > 1)) {
+					reason = @"<embed>s with too short content length, or too many <embed>s";
+					toRemove = YES;
+				}
+
+#undef countsFor
+
+				//if el.tag == 'div' and counts['img'] >= 1 and toRemove:
+				//	imgs = el.findall('.//img')
+				//	validImg = False
+				//	self.debug(tounicode(el))
+				//	for img in imgs:
+				//
+				//		height = img.get('height')
+				//		textLength = img.get('textLength')
+				//		self.debug ("height %s textLength %s" %(repr(height), repr(textLength)))
+				//		if toInt(height) >= 100 or toInt(textLength) >= 100:
+				//			validImg = True
+				//			self.debug("valid image" + tounicode(img))
+				//			break
+				//	if validImg:
+				//		toRemove = False
+				//		self.debug("Allowing %s" %el.textContent())
+				//		for desnode in self.tags(el, "table", "ul", "div"):
+				//			allowed[desnode] = True
+
+				// Find x non empty preceding and succeeding siblings
+				NSUInteger i = 0, j = 0;
+				NSUInteger x = 1;
+				CFMutableArrayRef siblings = CFArrayCreateMutable(kCFAllocatorDefault, 0, NULL);
+				NSUInteger sibContentLength;
+				NSXMLNode *sib;
+				
+				while ((sib = [el nextSibling]) != nil) {
+					//self.debug(sib.textContent())
+					sibContentLength = [self textLength:sib];
+					if (sibContentLength) {
+						i += 1;
+						CFArrayAppendValue(siblings, (void *)sibContentLength);
+						if (i == x)  break;
+					}
+				}
+				
+				while ((sib = [el previousSibling]) != nil) {
+					//self.debug(sib.textContent())
+					sibContentLength = [self textLength:sib];
+					if (sibContentLength) {
+						j += 1;
+						CFArrayAppendValue(siblings, (void *)sibContentLength);
+						if (j == x)  break;
+					}
+				}
+				
+				//self.debug(str(siblings))
+				
+				if ((CFArrayGetCount(siblings) > 0)
+					&& (sumCFArrayOfNSUInteger(siblings) > 1000)) {
+					
+					toRemove = NO;
+					[self debug:[NSString stringWithFormat:@"Allowing %@", el]];
+					
+					BOOL yesBool = YES;
+					for (NSXMLElement *desnode in [self tagsIn:el withNames:@"table", @"ul", @"div", nil]) {
+						CFDictionarySetValue(allowed, [HashableElement elementForNode:desnode], (void *)yesBool);
+					}
+				}
+				
+				CFRelease(siblings);
+
+				if (toRemove) {
+					[self debug:[NSString stringWithFormat:@"Cleaned %6.3f %@ with weight %f cause it has %@.", 								 contentScore, el, weight, reason]];
+					//print tounicode(el)
+					//self.debug("pname %s pweight %.3f" %(pname, pweight))
+					[el detach];
+				}
+			}
+			
+			CFRelease(counts);
+			
+		}
+	}
+
+	/*
+	for el in ([node] + [n for n in node.iter()]):
+		if not (self.options['attributes']):
+			//el.attrib = {} //FIXME:Checkout the effects of disabling this
+			pass
+	 */
+		
+	CFRelease(allowed);
+	
+	return node;
+}
+
 - (NSXMLDocument *)summaryXMLDocument;
 {
 	if (self.html == nil)  return nil;
@@ -520,7 +787,7 @@ NSString * const	sentenceEnd =							@"\\.( |$)";
 		
 		NSDictionary *bestCandidate = [self selectBestCandidate:candidates];
 
-		NSXMLNode *article = nil;
+		NSXMLDocument *article = nil;
 		
 		if (bestCandidate != nil) {
 					article = [self getArticleForCandidates:candidates 
@@ -546,8 +813,20 @@ NSString * const	sentenceEnd =							@"\\.( |$)";
 			}
 		}
 		
-		return self.html;
-
+		NSXMLDocument *cleanedArticle = [self sanitizeArticle:article forCandidates:candidates];
+		//[self cleanAttributes:]
+		NSUInteger cleanedArticleLength = (cleanedArticle == nil) ? 0 : [[cleanedArticle XMLString] length];
+		NSNumber *retryLengthNum = [self.options objectForKey:@"retryLength"];
+		NSUInteger retryLength = (retryLengthNum != nil) ? [retryLengthNum unsignedIntegerValue] : RETRY_LENGTH;
+		BOOL ofAcceptableLength = cleanedArticleLength >= retryLength;
+		if (ruthless && !ofAcceptableLength) {
+			ruthless = NO;
+			continue;
+		}
+		else {
+			return cleanedArticle;
+		}
+		
 	}
 
 }

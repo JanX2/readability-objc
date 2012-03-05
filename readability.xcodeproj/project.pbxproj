@@ -10,6 +10,7 @@
 		3D706B8D14F6ABDD008ACC2E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D706B8C14F6ABDD008ACC2E /* Foundation.framework */; };
 		3D706B9014F6ABDD008ACC2E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D706B8F14F6ABDD008ACC2E /* main.m */; };
 		3D706B9414F6ABDD008ACC2E /* readability.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3D706B9314F6ABDD008ACC2E /* readability.1 */; };
+		3DACF75E15051755003A6BF7 /* NSString+Counting.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DACF75D15051755003A6BF7 /* NSString+Counting.m */; };
 		3DC9BE3314F77F37007062BC /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DC9BE3214F77F37007062BC /* WebKit.framework */; };
 		3DC9BE5314F7D3D4007062BC /* NSURL+ValidityChecking.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC9BE5014F7D3D4007062BC /* NSURL+ValidityChecking.m */; };
 		3DC9BE5414F7D3D4007062BC /* KBWebArchiver.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC9BE5214F7D3D4007062BC /* KBWebArchiver.m */; };
@@ -37,6 +38,8 @@
 		3D706B9214F6ABDD008ACC2E /* readability-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "readability-Prefix.pch"; sourceTree = "<group>"; };
 		3D706B9314F6ABDD008ACC2E /* readability.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = readability.1; sourceTree = "<group>"; };
 		3D706BA014F6AC76008ACC2E /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		3DACF75C15051755003A6BF7 /* NSString+Counting.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSString+Counting.h"; path = "readability/NSString+Counting.h"; sourceTree = "<group>"; };
+		3DACF75D15051755003A6BF7 /* NSString+Counting.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSString+Counting.m"; path = "readability/NSString+Counting.m"; sourceTree = "<group>"; };
 		3DC9BE3214F77F37007062BC /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		3DC9BE4F14F7D3D4007062BC /* NSURL+ValidityChecking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSURL+ValidityChecking.h"; path = "webarchiver/NSURL+ValidityChecking.h"; sourceTree = "<group>"; };
 		3DC9BE5014F7D3D4007062BC /* NSURL+ValidityChecking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSURL+ValidityChecking.m"; path = "webarchiver/NSURL+ValidityChecking.m"; sourceTree = "<group>"; };
@@ -150,6 +153,8 @@
 			children = (
 				3DC9BEC214FA5F12007062BC /* NSXMLNode+HTMLUtilities.h */,
 				3DC9BEC314FA5F12007062BC /* NSXMLNode+HTMLUtilities.m */,
+				3DACF75C15051755003A6BF7 /* NSString+Counting.h */,
+				3DACF75D15051755003A6BF7 /* NSString+Counting.m */,
 			);
 			name = Categories;
 			sourceTree = "<group>";
@@ -210,6 +215,7 @@
 				3DC9BE5414F7D3D4007062BC /* KBWebArchiver.m in Sources */,
 				3DC9BE7214F93ECC007062BC /* JXReadabilityDocument.m in Sources */,
 				3DC9BEC414FA5F12007062BC /* NSXMLNode+HTMLUtilities.m in Sources */,
+				3DACF75E15051755003A6BF7 /* NSString+Counting.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
