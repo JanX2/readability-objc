@@ -115,12 +115,17 @@
 
 - (NSXMLNode *)lxmlTailNode;
 {
-	NSXMLNode *tailNode = [self nextSibling];
-	
-	if ((tailNode == nil) || ([tailNode kind] != NSXMLTextKind)) {
+	if ([self kind] != NSXMLTextKind) {
+		NSXMLNode *tailNode = [self nextSibling];
+		
+		if ((tailNode == nil) || ([tailNode kind] != NSXMLTextKind)) {
+			return nil;
+		} else {
+			return tailNode;
+		}
+	}
+	else {
 		return nil;
-	} else {
-		return tailNode;
 	}
 }
 

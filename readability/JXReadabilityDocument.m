@@ -252,24 +252,20 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 										  usingBlock:^(id obj, NSUInteger pos, BOOL *stop) {
 											  NSXMLNode *child = obj;
 											  NSXMLElement *paragraph;
+										  
+											  NSXMLNode *tailNode = [child lxmlTailNode];
 											  
-											  if ([child kind] != NSXMLTextKind) {
+											  NSString *childTailString = ((tailNode == nil) ? @"" : [tailNode stringValue]);
+											  
+											  if (([childTailString length] != 0) 
+												  && ([[childTailString stringByTrimmingCharactersInSet:whitespaceAndNewlineCharacterSet] length] != 0)) { // using -ws_isBlankString would be faster
 												  
-												  NSXMLNode *tailNode = [child lxmlTailNode];
+												  paragraph = [NSXMLNode elementWithName:@"p" 
+																			 stringValue:childTailString];
 												  
-												  NSString *childTailString = ((tailNode == nil) ? @"" : [tailNode stringValue]);
-												  
-												  if (([childTailString length] != 0) 
-													  && ([[childTailString stringByTrimmingCharactersInSet:whitespaceAndNewlineCharacterSet] length] != 0)) { // using -ws_isBlankString would be faster
-													  
-													  paragraph = [NSXMLNode elementWithName:@"p" 
-																				 stringValue:childTailString];
-													  
-													  [tailNode detach]; // We could get [tailNode index] and insert there after detaching
-													  [elem insertChild:paragraph atIndex:(pos + 1)];
-													  //NSLog(@"Appended %@ to %@", p, [elem readabilityDescription]);
-												  }
-												  
+												  [tailNode detach]; // We could get [tailNode index] and insert there after detaching
+												  [elem insertChild:paragraph atIndex:(pos + 1)];
+												  //NSLog(@"Appended %@ to %@", p, [elem readabilityDescription]);
 											  }
 											  
 											  if ([[child name] isEqualToString:@"br"]) {
