@@ -81,7 +81,7 @@ int main(int argc, const char * argv[])
 		NSString *source = [[[NSString alloc] initWithData:[resource data] 
 												  encoding:encoding] autorelease];
 #if DEBUG
-		{
+		if (output != nil) {
 			NSString *outputRawPath = [[[output stringByDeletingPathExtension] 
 										stringByAppendingString:@"-raw"]
 									   stringByAppendingPathExtension:[output pathExtension]];
@@ -106,7 +106,7 @@ int main(int argc, const char * argv[])
 															  options:NSXMLDocumentTidyHTML 
 																error:&error];
 #if DEBUG
-		{
+		if (output != nil) {
 			NSString *outputTidyPath = [[[output stringByDeletingPathExtension] 
 										 stringByAppendingString:@"-tidy"]
 										stringByAppendingPathExtension:[output pathExtension]];
@@ -139,11 +139,11 @@ int main(int argc, const char * argv[])
 			[readabilityDoc release];
 		}
 
-		
+/*		
 		if (result == nil) {
 			NSLog(@"\n%@", error);
 		}
-		
+*/
 		
 		if (output == nil) {
 			fprintf(stdout, "%s\n", [result UTF8String]);
