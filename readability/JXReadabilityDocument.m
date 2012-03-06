@@ -141,10 +141,10 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	va_list tag_names;
 	va_start (tag_names, firstTagName);
     for (NSString *tagName = firstTagName; tagName != nil; tagName = va_arg(tag_names, NSString *)) {
-        [tags addObjectsFromArray:
-		 [node nodesForXPath:[NSString stringWithFormat:tagNameXPath, tagName] 
-					   error:NULL]
-		 ];
+		NSArray *foundNodes = [node nodesForXPath:[NSString stringWithFormat:tagNameXPath, tagName] 
+											error:NULL];
+		//foundNodes = [[foundNodes reverseObjectEnumerator] allObjects];
+		[tags addObjectsFromArray:foundNodes];
     }
 	va_end (tag_names);
 	
@@ -158,11 +158,10 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	va_list tag_names;
 	va_start (tag_names, firstTagName);
     for (NSString *tagName = firstTagName; tagName != nil; tagName = va_arg(tag_names, NSString *)) {
-        [tags addObjectsFromArray:
-		 [[[node nodesForXPath:[NSString stringWithFormat:tagNameXPath, tagName] 
-						 error:NULL]
-		   reverseObjectEnumerator] allObjects]
-		];
+		NSArray *foundNodes = [node nodesForXPath:[NSString stringWithFormat:tagNameXPath, tagName] 
+											error:NULL];
+		foundNodes = [[foundNodes reverseObjectEnumerator] allObjects];
+		[tags addObjectsFromArray:foundNodes];
     }
 	va_end (tag_names);
 	
