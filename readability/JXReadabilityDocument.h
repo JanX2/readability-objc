@@ -26,6 +26,8 @@
 	NSRegularExpression *	newlinePlusSurroundingwhitespaceRe;
 	NSRegularExpression *	tabRunRe;
 	NSRegularExpression *	sentenceEndRe;
+	
+	NSSet *					divToPElementsTagNames;
 }
 
 @property (nonatomic, copy) NSString *input;

@@ -20,14 +20,19 @@ NSString * const	positiveNames =			@"article|body|content|entry|hentry|main|page
 NSString * const	negativeNames =			@"combx|comment|com-|contact|foot|footer|footnote|masthead|media|meta|outbrain|promo|related|scroll|shoutbox|sidebar|sponsor|shopping|tags|tool|widget";
 NSString * const	divToPElements =		@"<(a|blockquote|dl|div|img|ol|p|pre|table|ul)";
 
-
 NSString * const	newlinePlusSurroundingwhitespace =		@"\\s*\n\\s*";
 NSString * const	tabRun =								@"[ \t]{2,}";
 NSString * const	sentenceEnd =							@"\\.( |$)";
 
 
+NSString * const	divToPElementsTagNamesString =	@"a|blockquote|dl|div|img|ol|p|pre|table|ul";
+
+
 // Original XPath: @".//%@". Alternative XPath: @".//*[matches(name(),'%@','i')]"
 NSString * const	tagNameXPath = @".//*[lower-case(name())='%@']";
+
+
+NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimiter);
 
 
 @interface HashableElement : NSObject <NSCopying> {
@@ -40,6 +45,14 @@ NSString * const	tagNameXPath = @".//*[lower-case(name())='%@']";
 - (id)initWithNode:(NSXMLNode *)aNode;
 
 @end
+
+NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimiter) {
+	NSArray *strings = [listString componentsSeparatedByString:delimiter];
+	
+	NSSet *stringSet = [NSSet setWithArray:strings];
+	
+	return stringSet;
+}
 
 
 @interface JXReadabilityDocument (Private)
@@ -88,6 +101,10 @@ NSString * const	tagNameXPath = @".//*[lower-case(name())='%@']";
 		sentenceEndRe = [[NSRegularExpression alloc] initWithPattern:sentenceEnd 
 															 options:0 
 															   error:NULL];
+		
+		NSString *delimiter = @"|";
+		divToPElementsTagNames = 	[stringSetForListStringDelimitedBy(divToPElementsTagNamesString, delimiter) retain];
+
 	}
 	
 	return self;
@@ -109,6 +126,8 @@ NSString * const	tagNameXPath = @".//*[lower-case(name())='%@']";
 	[newlinePlusSurroundingwhitespaceRe release];
 	[tabRunRe release];
 	[sentenceEndRe release];
+	
+	[divToPElementsTagNames release];
 	
 	[super dealloc];
 }
@@ -194,11 +213,19 @@ NSString * const	tagNameXPath = @".//*[lower-case(name())='%@']";
 	nodes = [self tagsIn:self.html withNames:@"div", nil];
 	for (NSXMLNode *elem in nodes) {
 		// Transform <div>s that do not contain other block elements into <p>s
-		s = [elem XMLString];
-		if ([divToPElementsRe rangeOfFirstMatchInString:s
-												options:0 
-												  range:NSMakeRange(0, [s length])].location == NSNotFound) {
-			//[self debug:[NSString stringWithFormat:@"Altering %@ to p", elem]];
+		NSXMLNode *elemNextSibling = [elem nextSibling];
+		NSXMLNode *descendant = elem;
+		BOOL blockElementFound = NO;
+		
+		while ((descendant = [descendant nextNode]) != elemNextSibling) {
+			if ([divToPElementsTagNames containsObject:descendant.name]) {
+				blockElementFound = YES;
+				break;
+			}
+		}
+		
+		if (blockElementFound == NO) {
+			//[self debug:[NSString stringWithFormat:@"Altering %@ to p", [elem readabilityDescription]]];
 			[elem setName:@"p"];
 			//NSLog(@"Fixed element %@", elem);
 		}

@@ -98,4 +98,49 @@
 }
 #endif
 
+- (NSString *)readabilityDescription;
+{
+	return [self readabilityDescriptionWithDepth:1];
+}
+	
+- (NSString *)readabilityDescriptionWithDepth:(NSUInteger)depth;
+{
+	NSMutableString *name = [NSMutableString string];
+	
+	NSString *ids = [self cssNamesForAttributeWithName:@"id"];
+	NSString *classes = [self cssNamesForAttributeWithName:@"class"];
+	
+	if (ids != nil) {
+		[name appendFormat:@"#%@", 
+		 [ids stringByReplacingOccurrencesOfString:@" " 
+										withString:@"#" 
+										   options:NSLiteralSearch 
+											 range:NSMakeRange(0, [ids length])]];
+	}
+	
+	if (classes != nil) {
+		[name appendFormat:@".%@", 
+		 [classes stringByReplacingOccurrencesOfString:@" " 
+											withString:@"." 
+											   options:NSLiteralSearch 
+												 range:NSMakeRange(0, [classes length])]];
+	}
+	
+	NSString *selfName = self.name;
+	if (([name length] == 0) || ![selfName isEqualToString:@"div"]) {
+		[name insertString:selfName atIndex:0];
+	}
+	
+	if (depth > 0) { 
+		NSXMLNode *selfParent = [self parent];
+		if (selfParent != nil) {
+			[name appendFormat:@" - %@", 
+			 [selfParent readabilityDescriptionWithDepth:(depth-1)]
+			 ];
+		}
+	}
+	
+	return name;
+}
+
 @end

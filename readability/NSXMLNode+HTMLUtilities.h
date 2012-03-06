@@ -18,4 +18,7 @@
 - (NSArray *)cssNamesForAttributeWithName:(NSString *)attributeName;
 #endif
 
+- (NSString *)readabilityDescription;
+- (NSString *)readabilityDescriptionWithDepth:(NSUInteger)depth;
+
 @end
