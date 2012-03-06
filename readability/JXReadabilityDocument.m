@@ -160,12 +160,19 @@ NSString * const	tagNameXPath = @".//*[lower-case(name())='%@']";
 	
 	do {
 		if ([elem kind] == NSXMLElementKind) {
-			NSString *s = [NSString stringWithFormat:@"%@ %@", 
-						   [elem cssNamesForAttributeWithName:@"class"], 
-						   [elem cssNamesForAttributeWithName:@"id"]];
-			//[self debug:s];
+			NSString *classes = [elem cssNamesForAttributeWithName:@"class"];
+			NSString *ids = [elem cssNamesForAttributeWithName:@"id"];
 			
+			if (classes == nil && ids == nil)  continue;
+
+			NSString *s = [NSString stringWithFormat:@"%@ %@", 
+						   (classes == nil ? @"" : classes), 
+						   (ids == nil ? @"" : ids)];
 			NSRange sRange = NSMakeRange(0, [s length]);
+			
+			if (sRange.length < 2)  continue;
+			
+			//[self debug:s];
 			
 			if (([unlikelyCandidatesRe rangeOfFirstMatchInString:s options:0 range:sRange].location != NSNotFound) 
 				&& ([okMaybeItsACandidateRe rangeOfFirstMatchInString:s options:0 range:sRange].location == NSNotFound)
