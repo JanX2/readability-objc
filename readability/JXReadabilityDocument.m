@@ -53,6 +53,15 @@ NSString * const	tagNameXPath = @".//*[lower-case(name())='%@']";
 
 @synthesize options;
 
+- (id)initWithXMLDocument:(NSXMLDocument *)aDoc copyDocument:(BOOL)doCopy;
+{
+	if (doCopy) {
+		return [self initWithXMLDocument:[[aDoc copy] autorelease]];
+	} else {
+		return [self initWithXMLDocument:aDoc];
+	}
+}
+
 - (id)initWithXMLDocument:(NSXMLDocument *)aDoc;
 {
 	self = [super init];

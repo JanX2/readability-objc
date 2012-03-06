@@ -33,7 +33,8 @@
 
 @property (nonatomic, retain) NSMutableDictionary *options;
 
-- (id)initWithXMLDocument:(NSXMLDocument *)aDoc;
+- (id)initWithXMLDocument:(NSXMLDocument *)aDoc copyDocument:(BOOL)doCopy;
+- (id)initWithXMLDocument:(NSXMLDocument *)aDoc; // Same as above with doCopy == NO
 
 - (NSXMLDocument *)summaryXMLDocument;
 

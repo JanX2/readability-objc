@@ -133,7 +133,8 @@ int main(int argc, const char * argv[])
 		if (doc != nil) {
 			[doc setDocumentContentKind:contentKind];
 			
-			JXReadabilityDocument *readabilityDoc = [[JXReadabilityDocument alloc] initWithXMLDocument:doc];
+			JXReadabilityDocument *readabilityDoc = [[JXReadabilityDocument alloc] initWithXMLDocument:doc
+																						  copyDocument:NO];
 			summaryDoc = [readabilityDoc summaryXMLDocument];
 			[readabilityDoc release];
 		}
