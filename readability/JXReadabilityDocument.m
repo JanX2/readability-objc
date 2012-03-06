@@ -310,12 +310,10 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 
 - (float)classWeight:(NSXMLElement *)e
 {
-	NSXMLNode *attribute;
-	
 	float weight = 0;
+	NSString *s;
 	
-	if ((attribute = [e attributeForName:@"class"]) != nil) {
-		NSString *s = [attribute stringValue];
+	if ((s = [e cssNamesForAttributeWithName:@"class"]) != nil) {
 		NSRange sRange = NSMakeRange(0, [s length]);
 		
 		if ([negativeRe rangeOfFirstMatchInString:s options:0 range:sRange].location != NSNotFound)  weight -= 25;
@@ -323,8 +321,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 		if ([positiveRe rangeOfFirstMatchInString:s options:0 range:sRange].location != NSNotFound)  weight += 25;
 	}
 	
-	if ((attribute = [e attributeForName:@"id"]) != nil) {
-		NSString *s = [attribute stringValue];
+	if ((s = [e cssNamesForAttributeWithName:@"id"]) != nil) {
 		NSRange sRange = NSMakeRange(0, [s length]);
 		
 		if ([negativeRe rangeOfFirstMatchInString:s options:0 range:sRange].location != NSNotFound)  weight -= 25;
