@@ -57,6 +57,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 
 @interface JXReadabilityDocument (Private)
 - (NSArray *)tagsIn:(NSXMLNode *)node withNames:(NSString *)firstTagName, ... NS_REQUIRES_NIL_TERMINATION;
+- (NSArray *)reverseTagsIn:(NSXMLNode *)node withNames:(NSString *)firstTagName, ... NS_REQUIRES_NIL_TERMINATION;
 @end
 
 @implementation JXReadabilityDocument
