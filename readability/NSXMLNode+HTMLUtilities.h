@@ -18,6 +18,9 @@
 - (NSArray *)cssNamesForAttributeWithName:(NSString *)attributeName;
 #endif
 
+- (NSString *)lxmlText;
+- (NSXMLNode *)lxmlTailNode;
+
 - (NSString *)readabilityDescription;
 - (NSString *)readabilityDescriptionWithDepth:(NSUInteger)depth;
 

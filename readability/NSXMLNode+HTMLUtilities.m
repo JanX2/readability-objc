@@ -98,6 +98,33 @@
 }
 #endif
 
+
+- (NSString *)lxmlText;
+{
+	NSString *s = nil;
+	
+	if (([self childCount] > 0)) {
+		NSXMLNode *child = [self childAtIndex:0];
+		if ([child kind] == NSXMLTextKind) {
+			s = [child stringValue];
+		}
+	}
+	
+	return s;
+}
+
+- (NSXMLNode *)lxmlTailNode;
+{
+	NSXMLNode *tailNode = [self nextSibling];
+	
+	if ((tailNode == nil) || ([tailNode kind] != NSXMLTextKind)) {
+		return nil;
+	} else {
+		return tailNode;
+	}
+}
+
+
 - (NSString *)readabilityDescription;
 {
 	return [self readabilityDescriptionWithDepth:1];

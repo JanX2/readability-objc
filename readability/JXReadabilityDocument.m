@@ -208,8 +208,6 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 {
 	NSArray *nodes;
 	
-	NSString *s;
-	
 	nodes = [self tagsIn:self.html withNames:@"div", nil];
 	for (NSXMLNode *elem in nodes) {
 		// Transform <div>s that do not contain other block elements into <p>s
@@ -232,11 +230,14 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	}
 	
 	NSXMLElement *p;
+	NSString *s;
 	
 	nodes = [self tagsIn:self.html withNames:@"div", nil];
 	for (NSXMLElement *elem in nodes) { // div tags always are elements
-		s = [elem stringValue];
-		if (([s length] != 0) 
+		
+		s = [elem lxmlText];
+		if ((s != nil)
+			&& ([s length] != 0) 
 			&& ([[s stringByTrimmingCharactersInSet:whitespaceAndNewlineCharacterSet] length] != 0)) { // using -ws_isBlankString would be faster
 			
 			p = [NSXMLNode elementWithName:@"p" 
@@ -250,18 +251,13 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 		[[elem children] enumerateObjectsWithOptions:NSEnumerationReverse 
 										  usingBlock:^(id obj, NSUInteger pos, BOOL *stop) {
 											  NSXMLNode *child = obj;
-											  NSString *childTailString;
-											  NSXMLNode *tailNode;
 											  NSXMLElement *paragraph;
 											  
 											  if ([child kind] != NSXMLTextKind) {
 												  
-												  tailNode = [child nextSibling];
-												  if ((tailNode == nil) || ([tailNode kind] != NSXMLTextKind)) {
-													  childTailString = @"";
-												  } else {
-													  childTailString = [tailNode stringValue];
-												  }
+												  NSXMLNode *tailNode = [child lxmlTailNode];
+												  
+												  NSString *childTailString = ((tailNode == nil) ? @"" : [tailNode stringValue]);
 												  
 												  if (([childTailString length] != 0) 
 													  && ([[childTailString stringByTrimmingCharactersInSet:whitespaceAndNewlineCharacterSet] length] != 0)) { // using -ws_isBlankString would be faster
