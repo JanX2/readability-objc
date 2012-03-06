@@ -196,7 +196,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 			if (([unlikelyCandidatesRe rangeOfFirstMatchInString:s options:0 range:sRange].location != NSNotFound) 
 				&& ([okMaybeItsACandidateRe rangeOfFirstMatchInString:s options:0 range:sRange].location == NSNotFound)
 				&& ![elem.name isEqualToString:@"body"]) {
-				//[self debug:[NSString stringWithFormat:@"Removing unlikely candidate - %@", elem]];
+				//[self debug:[NSString stringWithFormat:@"Removing unlikely candidate - %@", [elem readabilityDescription]]];
 				[elem detach];
 			}
 		}
@@ -227,7 +227,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 		if (blockElementFound == NO) {
 			//[self debug:[NSString stringWithFormat:@"Altering %@ to p", [elem readabilityDescription]]];
 			[elem setName:@"p"];
-			//NSLog(@"Fixed element %@", elem);
+			//NSLog(@"Fixed element %@", [elem readabilityDescription]);
 		}
 	}
 	
@@ -244,7 +244,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 			
 			[elem setStringValue:@""];
 			[elem insertChild:p atIndex:0];
-			//NSLog(@"Appended %@ to %@", p, elem);
+			//NSLog(@"Appended %@ to %@", p, [elem readabilityDescription]);
 		}
 		
 		[[elem children] enumerateObjectsWithOptions:NSEnumerationReverse 
@@ -271,14 +271,14 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 													  
 													  [tailNode detach]; // We could get [tailNode index] and insert there after detaching
 													  [elem insertChild:paragraph atIndex:(pos + 1)];
-													  //NSLog(@"Appended %@ to %@", p, elem);
+													  //NSLog(@"Appended %@ to %@", p, [elem readabilityDescription]);
 												  }
 												  
 											  }
 											  
 											  if ([[child name] isEqualToString:@"br"]) {
 												  [child detach];
-												  //NSLog(@"Dropped <br> at %@", elem);
+												  //NSLog(@"Dropped <br> at %@", [elem readabilityDescription]);
 											  }
 										  }];
 		
@@ -456,7 +456,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	NSArray *topFive = ([sortedCandidates count] >= 5) ? [sortedCandidates subarrayWithRange:NSMakeRange(0, 5)] : sortedCandidates;
 	for (NSDictionary *candidate in topFive) {
 		elem = [candidate objectForKey:@"elem"];
-		[self debug:[NSString stringWithFormat:@"Top 5 : %6.3f %@", [candidate objectForKey:@"contentScore"], [elem description]]];
+		[self debug:[NSString stringWithFormat:@"Top 5 : %6.3f %@", [candidate objectForKey:@"contentScore"], [elem readabilityDescription]]];
 	}
 #endif
 	
@@ -548,7 +548,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 		candidate = [candidates objectForKey:elem];
 		ld = [self getLinkDensity:elem];
 		score = [[candidate objectForKey:@"contentScore"] floatValue];
-		//[self debug:[NSString stringWithFormat:@"Candid: %6.3f %s link density %.3f -> %6.3f", score, [elem description], ld, score*(1-ld)]];
+		//[self debug:[NSString stringWithFormat:@"Candid: %6.3f %s link density %.3f -> %6.3f", score, [elem readabilityDescription], ld, score*(1-ld)]];
 		score *= (1 - ld);
 		[candidate setObject:[NSNumber numberWithFloat:score] forKey:@"contentScore"];
 	}
@@ -620,7 +620,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 
 		if ((weight + contentScore) < 0.0) {
 			[self debug:[NSString stringWithFormat:@"Cleaned %@ with score %6.3f and weight %-3s",
-						 el, contentScore, weight]];
+						 [el readabilityDescription], contentScore, weight]];
 			[el detach];
 		}
 		else if ([[el stringValue] countOccurancesOfString:@","] < 10) {
@@ -753,7 +753,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 					&& (sumCFArrayOfNSUInteger(siblings) > 1000)) {
 					
 					toRemove = NO;
-					[self debug:[NSString stringWithFormat:@"Allowing %@", el]];
+					[self debug:[NSString stringWithFormat:@"Allowing %@", [el readabilityDescription]]];
 					
 					BOOL yesBool = YES;
 					for (NSXMLElement *desnode in [self tagsIn:el withNames:@"table", @"ul", @"div", nil]) {
@@ -764,7 +764,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 				CFRelease(siblings);
 
 				if (toRemove) {
-					[self debug:[NSString stringWithFormat:@"Cleaned %6.3f %@ with weight %f cause it has %@.", 								 contentScore, el, weight, reason]];
+					[self debug:[NSString stringWithFormat:@"Cleaned %6.3f %@ with weight %f cause it has %@.", 								 contentScore, [el readabilityDescription], weight, reason]];
 					//print tounicode(el)
 					//self.debug("pname %s pweight %.3f" %(pname, pweight))
 					[el detach];
