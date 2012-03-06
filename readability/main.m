@@ -128,6 +128,7 @@ int main(int argc, const char * argv[])
 		}
 #endif
 		
+		NSXMLDocument *cleanedDoc = nil;
 		NSXMLDocument *summaryDoc = nil;
 		
 		if (doc != nil) {
@@ -136,14 +137,32 @@ int main(int argc, const char * argv[])
 			JXReadabilityDocument *readabilityDoc = [[JXReadabilityDocument alloc] initWithXMLDocument:doc
 																						  copyDocument:NO];
 			summaryDoc = [readabilityDoc summaryXMLDocument];
+			cleanedDoc = readabilityDoc.html;
 			[readabilityDoc release];
 		}
 
-/*		
-		if (result == nil) {
-			NSLog(@"\n%@", error);
+#if DEBUG
+		if (output != nil) {
+			NSString *outputCleanedPath = [[[output stringByDeletingPathExtension] 
+										 stringByAppendingString:@"-cleaned"]
+										stringByAppendingPathExtension:[output pathExtension]];
+			BOOL OK;
+			
+			if (cleanedDoc != nil)	{
+				NSData *docData = [cleanedDoc XMLDataWithOptions:(contentKind | NSXMLNodePrettyPrint)];
+				OK = [docData writeToFile:outputCleanedPath  
+								  options:NSDataWritingAtomic 
+									error:&error];
+			}
+			else {
+				OK = NO;
+			}
+			
+			if (!OK && verbose) {
+				NSLog(@"\n%@", error);
+			}
 		}
-*/
+#endif
 		
 		if (output == nil) {
 			fprintf(stdout, "%s\n", [result UTF8String]);
