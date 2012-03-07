@@ -404,7 +404,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 			&& ([sibling kind] == NSXMLElementKind)) {
 			
 			float linkDensity = [self getLinkDensity:(NSXMLElement *)sibling];
-			NSString *nodeContent = [sibling stringValue];
+			NSString *nodeContent = [sibling lxmlText];
 			nodeContent = (nodeContent == nil) ? @"" : nodeContent;
 			NSUInteger nodeLength = [nodeContent length];
 			
