@@ -818,12 +818,12 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 		//NSLog(@"%@", candidates);
 		
 		NSDictionary *bestCandidate = [self selectBestCandidate:candidates];
-
+		
 		NSXMLDocument *article = nil;
 		
 		if (bestCandidate != nil) {
-					article = [self getArticleForCandidates:candidates 
-										   andBestCandidate:bestCandidate];
+			article = [self getArticleForCandidates:candidates 
+								   andBestCandidate:bestCandidate];
 		}
 		else {
 			if (ruthless) {
