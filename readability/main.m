@@ -96,8 +96,6 @@ int main(int argc, const char * argv[])
 			}
 		}
 #endif
-		
-		NSString *result = source;
 
 		
 		NSXMLDocumentContentKind contentKind = NSXMLDocumentXHTMLKind;
@@ -165,7 +163,7 @@ int main(int argc, const char * argv[])
 #endif
 		
 		if (output == nil) {
-			fprintf(stdout, "%s\n", [result UTF8String]);
+			fprintf(stdout, "%s\n", [[summaryDoc XMLString] UTF8String]);
 		}
 		else {
 			BOOL OK;
