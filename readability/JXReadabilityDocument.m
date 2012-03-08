@@ -613,8 +613,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 		tag = el.name;
 
 		if ((weight + contentScore) < 0.0) {
-			[self debug:[NSString stringWithFormat:@"Cleaned %@ with score %6.3f and weight %-3s",
-						 [el readabilityDescription], contentScore, weight]];
+			//[self debug:[NSString stringWithFormat:@"Cleaned %@ with score %6.3f and weight %-3s", [el readabilityDescription], contentScore, weight]];
 			[el detach];
 		}
 		else if ([[el stringValue] countOccurancesOfString:@","] < 10) {
@@ -747,7 +746,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 					&& (sumCFArrayOfNSUInteger(siblings) > 1000)) {
 					
 					toRemove = NO;
-					[self debug:[NSString stringWithFormat:@"Allowing %@", [el readabilityDescription]]];
+					//[self debug:[NSString stringWithFormat:@"Allowing %@", [el readabilityDescription]]];
 					
 					BOOL yesBool = YES;
 					for (NSXMLElement *desnode in [self tagsIn:el withNames:@"table", @"ul", @"div", nil]) {
@@ -758,7 +757,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 				CFRelease(siblings);
 
 				if (toRemove) {
-					[self debug:[NSString stringWithFormat:@"Cleaned %6.3f %@ with weight %f cause it has %@.", 								 contentScore, [el readabilityDescription], weight, reason]];
+					//[self debug:[NSString stringWithFormat:@"Cleaned %6.3f %@ with weight %f cause it has %@.", 								 contentScore, [el readabilityDescription], weight, reason]];
 					//print tounicode(el)
 					//self.debug("pname %s pweight %.3f" %(pname, pweight))
 					[el detach];
@@ -834,7 +833,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 			if (ruthless) {
 				NSLog(@"Ruthless removal did not work. ");
 				ruthless = NO;
-				[self debug:@"Ended up stripping too much - going for a safer _parse"];
+				//[self debug:@"Ended up stripping too much - going for a safer _parse"];
 				// try again
 				continue;
 			}
