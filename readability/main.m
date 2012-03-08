@@ -58,13 +58,14 @@ int main(int argc, const char * argv[])
 		
 		NSString *urlString = [args stringForKey:@"url"];
 		NSString *localOnlyString = [args stringForKey:@"local"];
+		NSString *webarchivePath = [args stringForKey:@"webarchive"];
 		NSString *verboseString = [args stringForKey:@"verbose"];
 		NSString *output = [args stringForKey:@"output"];
 		
 		BOOL localOnly = [localOnlyString isEqualToString:@"YES"];
 		BOOL verbose = [verboseString isEqualToString:@"YES"];
 		
-		if (urlString == nil) {
+		if ((urlString == nil) && (webarchivePath == nil)) {
 #if 0
 			NSArray *arguments = [[NSProcessInfo processInfo] arguments];
 			const char *executablePath = [[arguments objectAtIndex:0] 
@@ -78,19 +79,35 @@ int main(int argc, const char * argv[])
 		
 
 		WebArchive *webarchive;
-		KBWebArchiver *archiver = [[KBWebArchiver alloc] initWithURLString:urlString];
-		archiver.localResourceLoadingOnly = localOnly;
-		webarchive = [archiver webArchive];
-		NSData *data = [webarchive data];
-		error = [archiver error];
-		[archiver release];
-		
-		if ( webarchive == nil || data == nil ) {
-			fprintf(stderr, "Error: Unable to create webarchive\n");
-			if (error != nil)  fprintf(stderr, "%s\n", [[error description] UTF8String]);
+		if (webarchivePath == nil) {
+			KBWebArchiver *archiver = [[KBWebArchiver alloc] initWithURLString:urlString];
+			archiver.localResourceLoadingOnly = localOnly;
+			webarchive = [archiver webArchive];
+			NSData *data = [webarchive data];
+			error = [archiver error];
+			[archiver release];
 			
-			[pool drain];
-			return EXIT_FAILURE;
+			if ( webarchive == nil || data == nil ) {
+				fprintf(stderr, "Error: Unable to create webarchive\n");
+				if (error != nil)  fprintf(stderr, "%s\n", [[error description] UTF8String]);
+				
+				[pool drain];
+				return EXIT_FAILURE;
+			}
+		}
+		else {
+			NSData *data = [NSData dataWithContentsOfFile:webarchivePath 
+												  options:0 
+													error:&error];
+			if (data == nil) {
+				fprintf(stderr, "Error: Unable to read webarchive\n");
+				if (error != nil)  fprintf(stderr, "%s\n", [[error description] UTF8String]);
+				
+				[pool drain];
+				return EXIT_FAILURE;
+			}
+			
+			webarchive = [[[WebArchive alloc] initWithData:data] autorelease];
 		}
 
 		WebResource *resource = [webarchive mainResource];
