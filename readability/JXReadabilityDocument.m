@@ -577,6 +577,10 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 
 - (NSXMLDocument *)sanitizeArticle:(NSXMLDocument *)node forCandidates:(NSDictionary *)candidates
 {
+#ifndef DEBUG_SANITIZE
+#	define DEBUG_SANITIZE	0
+#endif
+	
 	NSNumber *minTextLengthNum = [self.options objectForKey:@"minTextLength"];
 	NSUInteger minLen = (minTextLengthNum != nil) ? [minTextLengthNum unsignedIntegerValue] : TEXT_LENGTH_THRESHOLD;
 	for (NSXMLElement *header in [self tagsIn:node withNames:@"h1", @"h2", @"h3", @"h4", @"h5", @"h6", nil]) {
@@ -601,10 +605,11 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 	NSUInteger contentLength;
 	float linkDensity;
 	NSXMLNode *parentNode;
-	NSDictionary *parentNodeDict;
 	
 	BOOL toRemove;
+#if DEBUG_SANITIZE
 	NSString *reason;
+#endif
 
 	// Conditionally clean <table>s, <ul>s, and <div>s
 	for (NSXMLElement *el in [self reverseTagsIn:node withNames:@"table", @"ul", @"div", nil]) {
@@ -624,14 +629,14 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 		}
 		
 		tag = el.name;
-
+		
 		if ((weight + contentScore) < 0.0) {
 			//[self debug:[NSString stringWithFormat:@"Cleaned %@ with score %6.3f and weight %-3s", [el readabilityDescription], contentScore, weight]];
 			[el detach];
 		}
 		else if ([[el stringValue] countOccurancesOfString:@","] < 10) {
 			CFMutableDictionaryRef counts = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, NULL); // keys: NSString, values:raw CFIndex
-
+			
 			for (NSString *kind in tagKinds) {
 				kindCount = (CFIndex)[[node nodesForXPath:[NSString stringWithFormat:tagNameXPath, kind] 
 													error:NULL] count];
@@ -642,20 +647,22 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 				kindCount -= 100;
 				CFDictionarySetValue(counts, @"li", (void *)kindCount);
 			}
-
+			
 			contentLength = [self textLength:el]; // Count the text length excluding any surrounding whitespace
 			linkDensity = [self getLinkDensity:el];
 			
 			parentNode = [el parent];
 			if (parentNode != nil) {
 				
-				parentNodeDict = [candidates objectForKey:[HashableElement elementForNode:parentNode]];
+#if DEBUG_SANITIZE
+				NSDictionary *parentNodeDict = [candidates objectForKey:[HashableElement elementForNode:parentNode]];
 				if (parentNodeDict != nil) {
 					contentScore = [[parentNodeDict objectForKey:@"contentScore"] floatValue];
 				}
 				else {
 					contentScore = 0.0;
 				}
+#endif
 				
 				//if parentNode is not None:
 				//	pweight = self.classWeight(parentNode) + contentScore
@@ -665,48 +672,64 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 				//	pname = "no parent"
 				
 				toRemove = NO;
+#if DEBUG_SANITIZE
 				reason = @"";
-
+#endif
+				
 #define countsFor(A)  (CFIndex)(CFDictionaryGetValue(counts, (A)))
 				
 				//if el.tag == 'div' and counts["img"] >= 1:
 				//	continue
 				if (countsFor(@"p") 
 					&& (countsFor(@"img") > countsFor(@"p"))) {
+#if DEBUG_SANITIZE
 					reason = [NSString stringWithFormat:@"too many images (%ld)", (long)countsFor(@"img")];
+#endif
 					toRemove = YES;
 				}
 				else if ((countsFor(@"li") > countsFor(@"p")) 
 						 && ![tag isEqualToString:@"ul"] 
 						 && ![tag isEqualToString:@"ol"]) {
+#if DEBUG_SANITIZE
 					reason = @"more <li>s than <p>s";
+#endif
 					toRemove = YES;
 				}
 				else if (countsFor(@"input") > (countsFor(@"p") / 3)) {
+#if DEBUG_SANITIZE
 					reason = @"less than 3x <p>s than <input>s";
+#endif
 					toRemove = YES;
 				}
 				else if ((contentLength < minLen) 
 						 && ((countsFor(@"img") == 0) 
 							 || (countsFor(@"img") > 2))) {
+#if DEBUG_SANITIZE
 					reason = [NSString stringWithFormat:@"too short content length %lu without a single image", (unsigned long)contentLength];
+#endif
 					toRemove = YES;
 				}
 				else if (weight < 25 && linkDensity > 0.2) {
+#if DEBUG_SANITIZE
 					reason = [NSString stringWithFormat:@"too many links %.3f for its weight %.0f", linkDensity, weight];
+#endif
 					toRemove = YES;
 				}
 				else if (weight >= 25 && linkDensity > 0.5) {
+#if DEBUG_SANITIZE
 					reason = [NSString stringWithFormat:@"too many links %.3f for its weight %.0f", linkDensity, weight];
+#endif
 					toRemove = YES;
 				}
 				else if (((countsFor(@"embed") == 1) && (contentLength < 75)) || (countsFor(@"embed") > 1)) {
+#if DEBUG_SANITIZE
 					reason = @"<embed>s with too short content length, or too many <embed>s";
+#endif
 					toRemove = YES;
 				}
-
+				
 #undef countsFor
-
+				
 				//if el.tag == 'div' and counts['img'] >= 1 and toRemove:
 				//	imgs = el.findall('.//img')
 				//	validImg = False
@@ -725,7 +748,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 				//		self.debug("Allowing %s" %el.textContent())
 				//		for desnode in self.tags(el, "table", "ul", "div"):
 				//			allowed[desnode] = True
-
+				
 				// Find x non empty preceding and succeeding siblings
 				NSUInteger i = 0, j = 0;
 				NSUInteger x = 1;
@@ -768,9 +791,11 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 				}
 				
 				CFRelease(siblings);
-
+				
 				if (toRemove) {
-					//[self debug:[NSString stringWithFormat:@"Cleaned %6.3f %@ with weight %f cause it has %@.", 								 contentScore, [el readabilityDescription], weight, reason]];
+#if DEBUG_SANITIZE
+					[self debug:[NSString stringWithFormat:@"Cleaned %6.3f %@ with weight %f cause it has %@.", 								 contentScore, [el readabilityDescription], weight, reason]];
+#endif
 					//print tounicode(el)
 					//self.debug("pname %s pweight %.3f" %(pname, pweight))
 					[el detach];
