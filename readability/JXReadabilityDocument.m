@@ -292,11 +292,14 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 
 - (NSString *)clean:(NSString *)_text
 {
+	NSUInteger textLength = [_text length];
+	if (textLength == 0)  return _text;
+	
 	NSMutableString *text = [_text mutableCopy];
 	
 	[newlinePlusSurroundingwhitespaceRe replaceMatchesInString:text 
 													   options:0 
-														 range:NSMakeRange(0, [text length]) 
+														 range:NSMakeRange(0, textLength) 
 												  withTemplate:@"\n"];
 	
 	[tabRunRe replaceMatchesInString:text 
@@ -756,7 +759,8 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 				NSUInteger sibContentLength;
 				NSXMLNode *sib;
 				
-				while ((sib = [el nextSibling]) != nil) {
+				sib = el;
+				while ((sib = [sib nextSibling]) != nil) {
 					//self.debug(sib.textContent())
 					sibContentLength = [self textLength:sib];
 					if (sibContentLength) {
@@ -766,7 +770,8 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 					}
 				}
 				
-				while ((sib = [el previousSibling]) != nil) {
+				sib = el;
+				while ((sib = [sib previousSibling]) != nil) {
 					//self.debug(sib.textContent())
 					sibContentLength = [self textLength:sib];
 					if (sibContentLength) {
