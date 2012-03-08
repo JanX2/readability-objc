@@ -472,14 +472,18 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	
 	NSMutableDictionary *candidates = [NSMutableDictionary dictionary];
 	
-	//[self debug:[self tagsIn:self.html withNames:@"div", nil]];
+#if 0
+	for (NSXMLNode *node in [self tagsIn:self.html withNames:@"div", nil]) {
+		[self debug:[node readabilityDescription]];
+	}
+#endif
 	
 	NSXMLElement *parentNode, *grandParentNode; // parents have to be elements
 	NSString *elemTextContent, *innerText;
 	NSUInteger innerTextLen;
 
 	NSMutableArray *ordered = [NSMutableArray array];
-	HashableElement *hashableElement;
+	HashableElement *hashableParent, *hashableGrandParent;
 	for (NSXMLElement *elem in [self tagsIn:self.html withNames:@"p", @"pre", @"td", nil]) {
 		parentNode = (NSXMLElement *)[elem parent];
 		if (parentNode == nil)  continue;
@@ -492,18 +496,18 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 		// If this paragraph is less than 25 characters, don't even count it.
 		if (innerTextLen < minLen)  continue;
 		
-		hashableElement = [HashableElement elementForNode:parentNode];
-		if ([candidates objectForKey:hashableElement] == nil) { 
+		hashableParent = [HashableElement elementForNode:parentNode];
+		if ([candidates objectForKey:hashableParent] == nil) { 
 			[candidates setObject:[self scoreNode:parentNode] 
-						   forKey:hashableElement];
+						   forKey:hashableParent];
 			[ordered addObject:parentNode];
 		}
 		
 		if (grandParentNode != nil) {
-			hashableElement = [HashableElement elementForNode:grandParentNode];
-			if ([candidates objectForKey:hashableElement] == nil) {
+			hashableGrandParent = [HashableElement elementForNode:grandParentNode];
+			if ([candidates objectForKey:hashableGrandParent] == nil) {
 				[candidates setObject:[self scoreNode:grandParentNode] 
-							   forKey:hashableElement];
+							   forKey:hashableGrandParent];
 				[ordered addObject:grandParentNode];
 			}
 		}
@@ -517,11 +521,11 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 		//WTF? candidates[elem]['contentScore'] += contentScore
 		float tempScore;
 		NSMutableDictionary *scoreDict;
-		scoreDict = [candidates objectForKey:parentNode];
+		scoreDict = [candidates objectForKey:hashableParent];
 		tempScore = [[scoreDict objectForKey:@"contentScore"] floatValue] + contentScore;
 		[scoreDict setObject:[NSNumber numberWithFloat:tempScore] forKey:@"contentScore"];
 		if (grandParentNode != nil) {
-			scoreDict = [candidates objectForKey:grandParentNode];
+			scoreDict = [candidates objectForKey:hashableGrandParent];
 			tempScore = [[scoreDict objectForKey:@"contentScore"] floatValue] + contentScore / 2.0;
 			[scoreDict setObject:[NSNumber numberWithFloat:tempScore] forKey:@"contentScore"];
 		}
@@ -534,7 +538,8 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	float score;
 	
 	for (NSXMLElement *elem in ordered) {
-		candidate = [candidates objectForKey:elem];
+		HashableElement *hashableElem = [HashableElement elementForNode:elem];
+		candidate = [candidates objectForKey:hashableElem];
 		ld = [self getLinkDensity:elem];
 		score = [[candidate objectForKey:@"contentScore"] floatValue];
 		//[self debug:[NSString stringWithFormat:@"Candid: %6.3f %s link density %.3f -> %6.3f", score, [elem readabilityDescription], ld, score*(1-ld)]];
