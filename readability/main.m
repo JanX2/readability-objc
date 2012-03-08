@@ -14,10 +14,43 @@
 #import "KBWebArchiver.h"
 #import "JXReadabilityDocument.h"
 
+
+BOOL dumpXMLDocumentToPath(NSXMLDocument *doc, NSString *output, NSXMLDocumentContentKind contentKind, NSString *tag, 		NSError **error);
+
+
+BOOL dumpXMLDocumentToPath(NSXMLDocument *doc, NSString *output, NSXMLDocumentContentKind contentKind, NSString *tag, 		NSError **error) {
+	if (output == nil)  return NO;
+	
+	NSString *outputPath = nil;
+	if (tag == nil) {
+		outputPath = output;
+	} else {
+		outputPath = [[[output stringByDeletingPathExtension] 
+					   stringByAppendingString:tag]
+					  stringByAppendingPathExtension:[output pathExtension]];
+	}
+	
+	BOOL OK;
+	
+	if (doc != nil)	{
+		NSData *docData = [doc XMLDataWithOptions:(contentKind | NSXMLNodePrettyPrint)];
+		OK = [docData writeToFile:outputPath  
+						  options:NSDataWritingAtomic 
+							error:error];
+	}
+	else {
+		OK = NO;
+	}
+	
+	return OK;
+}
+
+
 int main(int argc, const char * argv[])
 {
 
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+	
 	{
 		NSError *error = nil;
 
@@ -104,25 +137,8 @@ int main(int argc, const char * argv[])
 															  options:NSXMLDocumentTidyHTML 
 																error:&error];
 #if DEBUG
-		if (output != nil) {
-			NSString *outputTidyPath = [[[output stringByDeletingPathExtension] 
-										 stringByAppendingString:@"-tidy"]
-										stringByAppendingPathExtension:[output pathExtension]];
-			BOOL OK;
-			
-			if (doc != nil)	{
-				NSData *docData = [doc XMLDataWithOptions:(contentKind | NSXMLNodePrettyPrint)];
-				OK = [docData writeToFile:outputTidyPath  
-								  options:NSDataWritingAtomic 
-									error:&error];
-			}
-			else {
-				OK = NO;
-			}
-			
-			if (!OK && verbose) {
-				NSLog(@"\n%@", error);
-			}
+		if (!dumpXMLDocumentToPath(doc, output, (contentKind | NSXMLNodePrettyPrint), @"-tidy", &error) && verbose) {
+			NSLog(@"\n%@", error);
 		}
 #endif
 		
@@ -140,25 +156,8 @@ int main(int argc, const char * argv[])
 		}
 
 #if DEBUG
-		if (output != nil) {
-			NSString *outputCleanedPath = [[[output stringByDeletingPathExtension] 
-										 stringByAppendingString:@"-cleaned"]
-										stringByAppendingPathExtension:[output pathExtension]];
-			BOOL OK;
-			
-			if (cleanedDoc != nil)	{
-				NSData *docData = [cleanedDoc XMLDataWithOptions:(contentKind | NSXMLNodePrettyPrint)];
-				OK = [docData writeToFile:outputCleanedPath  
-								  options:NSDataWritingAtomic 
-									error:&error];
-			}
-			else {
-				OK = NO;
-			}
-			
-			if (!OK && verbose) {
-				NSLog(@"\n%@", error);
-			}
+		if (!dumpXMLDocumentToPath(cleanedDoc, output, (contentKind | NSXMLNodePrettyPrint), @"-cleaned", &error) && verbose) {
+			NSLog(@"\n%@", error);
 		}
 #endif
 		
@@ -166,19 +165,7 @@ int main(int argc, const char * argv[])
 			fprintf(stdout, "%s\n", [[summaryDoc XMLString] UTF8String]);
 		}
 		else {
-			BOOL OK;
-			
-			if (summaryDoc != nil)	{
-				NSData *docData = [summaryDoc XMLDataWithOptions:(contentKind | NSXMLNodePrettyPrint)];
-				OK = [docData writeToFile:output  
-							 options:NSDataWritingAtomic 
-							   error:&error];
-			}
-			else {
-				OK = NO;
-			}
-			
-			if (!OK && verbose) {
+			if (!dumpXMLDocumentToPath(summaryDoc, output, (contentKind | NSXMLNodePrettyPrint), nil, &error) && verbose) {
 				NSLog(@"\n%@", error);
 			}
 		}
