@@ -526,7 +526,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 		}
 
 		float contentScore = 1.0;
-		contentScore += [[innerText componentsSeparatedByString:@","] count]; // CHANGEME: count the "," directly
+		contentScore += [innerText countOccurancesOfString:@","] + 1;
 		contentScore += MIN((innerTextLen / 100), 3);
 		//if elem not in candidates:
 		//	candidates[elem] = self.scoreNode(elem)
