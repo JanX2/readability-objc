@@ -19,6 +19,7 @@
 #endif
 
 - (NSString *)lxmlText;
+- (NSXMLNode *)lxmlTextNode;
 - (NSXMLNode *)lxmlTailNode;
 
 - (NSString *)readabilityDescription;

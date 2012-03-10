@@ -248,7 +248,8 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	nodes = [self tagsIn:self.html withNames:@"div", nil];
 	for (NSXMLElement *elem in nodes) { // div tags always are elements
 		
-		s = [elem lxmlText];
+		NSXMLNode *firstTextNode = [elem lxmlTextNode];
+		s = [firstTextNode stringValue];
 		if ((s != nil)
 			&& ([s length] != 0) 
 			&& ([[s stringByTrimmingCharactersInSet:whitespaceAndNewlineCharacterSet] length] != 0)) { // using -ws_isBlankString would be faster
@@ -256,7 +257,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 			p = [NSXMLNode elementWithName:@"p" 
 							   stringValue:s];
 			
-			[elem setStringValue:@""];
+			[firstTextNode detach];
 			[elem insertChild:p atIndex:0];
 			//NSLog(@"Appended %@ to %@", p, [elem readabilityDescription]);
 		}

@@ -113,6 +113,18 @@
 	return s;
 }
 
+- (NSXMLNode *)lxmlTextNode;
+{
+	if (([self childCount] > 0)) {
+		NSXMLNode *child = [self childAtIndex:0];
+		if ([child kind] == NSXMLTextKind) {
+			return child;
+		}
+	}
+	
+	return nil;
+}
+
 - (NSXMLNode *)lxmlTailNode;
 {
 	if ([self kind] != NSXMLTextKind) {
