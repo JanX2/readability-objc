@@ -27,7 +27,7 @@ BOOL dumpXMLDocumentToPath(NSXMLDocument *doc, NSString *output, NSUInteger xmlO
 	} else {
 		outputPath = [[[output stringByDeletingPathExtension] 
 					   stringByAppendingString:tag]
-					  stringByAppendingPathExtension:[output pathExtension]];
+					  stringByAppendingPathExtension:@"html"];
 	}
 	
 	BOOL OK;
@@ -134,7 +134,7 @@ int main(int argc, const char * argv[])
 		if (output != nil) {
 			NSString *outputRawPath = [[[output stringByDeletingPathExtension] 
 										stringByAppendingString:@"-raw"]
-									   stringByAppendingPathExtension:[output pathExtension]];
+									   stringByAppendingPathExtension:@"html"];
 			BOOL OK;
 			OK = [source writeToFile:outputRawPath 
 						  atomically:YES 
@@ -189,6 +189,35 @@ int main(int argc, const char * argv[])
 		else {
 			if (!dumpXMLDocumentToPath(summaryDoc, output, xmlOutputOptions, nil, &error) && verbose) {
 				NSLog(@"\n%@", error);
+			}
+			
+			if ([[output pathExtension] isEqualToString:@"webarchive"]) {
+				BOOL success;
+				
+				// Create a new webarchive with the processed markup as main content and the resources from the source webarchive 
+				NSData *docData = [doc XMLDataWithOptions:xmlOutputOptions];
+				WebResource *mainResource = [[WebResource alloc] initWithData:docData 
+																		  URL:[resource URL] 
+																	 MIMEType:[resource MIMEType]
+															 textEncodingName:[resource textEncodingName] 
+																	frameName:nil];
+				
+				WebArchive *outWebarchive = [[WebArchive alloc] initWithMainResource:mainResource 
+																		subresources:[webarchive subresources] 
+																	subframeArchives:[webarchive subframeArchives]];
+				[mainResource release];
+				
+				NSData *outWebarchiveData = [outWebarchive data];
+				
+				success = [outWebarchiveData writeToFile:output 
+												 options:NSDataWritingAtomic 
+												   error:&error];
+				
+				[outWebarchive release];
+				
+				if (!success) {
+					NSLog(@"\n%@", error);
+				}
 			}
 		}
 		
