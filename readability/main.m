@@ -71,7 +71,7 @@ int main(int argc, const char * argv[])
 			const char *executablePath = [[arguments objectAtIndex:0] 
 										  fileSystemRepresentation];
 #endif
-			fprintf(stderr, "readability 0.1\nUsage: \nreadability -url URL [-verbose YES|NO] -output FILE \n");
+			fprintf(stderr, "readability 0.1.1\nUsage: \nreadability -url URL [-verbose YES|NO] -output FILE \n");
 			
 			[pool drain];
 			return EXIT_FAILURE;
