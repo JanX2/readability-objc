@@ -41,10 +41,6 @@ NSString * const	sentenceEnd =							@"\\.( |$)";
 NSString * const	divToPElementsTagNamesString =	@"a|blockquote|dl|div|img|ol|p|pre|table|ul";
 
 
-// Original XPath: @".//%@". Alternative XPath: @".//*[matches(name(),'%@','i')]"
-NSString * const	tagNameXPath = @".//*[lower-case(name())='%@']";
-
-
 NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimiter);
 
 
@@ -67,11 +63,6 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	return stringSet;
 }
 
-
-@interface JXReadabilityDocument (Private)
-- (NSArray *)tagsIn:(NSXMLNode *)node withNames:(NSString *)firstTagName, ... NS_REQUIRES_NIL_TERMINATION;
-- (NSArray *)reverseTagsIn:(NSXMLNode *)node withNames:(NSString *)firstTagName, ... NS_REQUIRES_NIL_TERMINATION;
-@end
 
 @implementation JXReadabilityDocument
 
@@ -147,40 +138,6 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 }
 
 
-- (NSArray *)tagsIn:(NSXMLNode *)node withNames:(NSString *)firstTagName, ...
-{
-    NSMutableArray *tags = [NSMutableArray array];
-	
-	va_list tag_names;
-	va_start (tag_names, firstTagName);
-    for (NSString *tagName = firstTagName; tagName != nil; tagName = va_arg(tag_names, NSString *)) {
-		NSArray *foundNodes = [node nodesForXPath:[NSString stringWithFormat:tagNameXPath, tagName] 
-											error:NULL];
-		//foundNodes = [[foundNodes reverseObjectEnumerator] allObjects];
-		[tags addObjectsFromArray:foundNodes];
-    }
-	va_end (tag_names);
-	
-	return tags;
-}
-
-- (NSArray *)reverseTagsIn:(NSXMLNode *)node withNames:(NSString *)firstTagName, ...
-{
-    NSMutableArray *tags = [NSMutableArray array];
-	
-	va_list tag_names;
-	va_start (tag_names, firstTagName);
-    for (NSString *tagName = firstTagName; tagName != nil; tagName = va_arg(tag_names, NSString *)) {
-		NSArray *foundNodes = [node nodesForXPath:[NSString stringWithFormat:tagNameXPath, tagName] 
-											error:NULL];
-		foundNodes = [[foundNodes reverseObjectEnumerator] allObjects];
-		[tags addObjectsFromArray:foundNodes];
-    }
-	va_end (tag_names);
-	
-	return tags;
-}
-
 - (void)debug:(id)a
 {
 	/*if ([(NSNumber *)[self.options objectForKey:@"debug"] boolValue])  */NSLog(@"%@", a);
@@ -221,7 +178,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 {
 	NSArray *nodes;
 	
-	nodes = [self tagsIn:self.html withNames:@"div", nil];
+	nodes = [self.html tagsWithNames:@"div", nil];
 	for (NSXMLNode *elem in nodes) {
 		// Transform <div>s that do not contain other block elements into <p>s
 		NSXMLNode *elemNextSibling = [elem nextSibling];
@@ -245,7 +202,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	NSXMLElement *p;
 	NSString *s;
 	
-	nodes = [self tagsIn:self.html withNames:@"div", nil];
+	nodes = [self.html tagsWithNames:@"div", nil];
 	for (NSXMLElement *elem in nodes) { // div tags always are elements
 		
 		NSXMLNode *firstTextNode = [elem lxmlTextNode];
@@ -490,7 +447,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	NSMutableDictionary *candidates = [NSMutableDictionary dictionary];
 	
 #if 0
-	for (NSXMLNode *node in [self tagsIn:self.html withNames:@"div", nil]) {
+	for (NSXMLNode *node in [self.html tagsWithNames:@"div", nil]) {
 		[self debug:[node readabilityDescription]];
 	}
 #endif
@@ -501,7 +458,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 
 	NSMutableArray *ordered = [NSMutableArray array];
 	HashableElement *hashableParent, *hashableGrandParent;
-	for (NSXMLElement *elem in [self tagsIn:self.html withNames:@"p", @"pre", @"td", nil]) {
+	for (NSXMLElement *elem in [self.html tagsWithNames:@"p", @"pre", @"td", nil]) {
 		parentNode = (NSXMLElement *)[elem parent];
 		if (parentNode == nil)  continue;
 		grandParentNode = (NSXMLElement *)[parentNode parent];
@@ -587,13 +544,13 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 	
 	NSNumber *minTextLengthNum = [self.options objectForKey:@"minTextLength"];
 	NSUInteger minLen = (minTextLengthNum != nil) ? [minTextLengthNum unsignedIntegerValue] : TEXT_LENGTH_THRESHOLD;
-	for (NSXMLElement *header in [self tagsIn:node withNames:@"h1", @"h2", @"h3", @"h4", @"h5", @"h6", nil]) {
+	for (NSXMLElement *header in [node tagsWithNames:@"h1", @"h2", @"h3", @"h4", @"h5", @"h6", nil]) {
 		if ([self classWeight:header] < 0 || [self getLinkDensity:header] > 0.33) { 
 			[header detach];
 		}
 	}
 
-	for (NSXMLElement *elem in [self tagsIn:node withNames:@"form", @"iframe", @"textarea", nil]) {
+	for (NSXMLElement *elem in [node tagsWithNames:@"form", @"iframe", @"textarea", nil]) {
 		[elem detach];
 	}
 	
@@ -616,7 +573,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 #endif
 
 	// Conditionally clean <table>s, <ul>s, and <div>s
-	for (NSXMLElement *el in [self reverseTagsIn:node withNames:@"table", @"ul", @"div", nil]) {
+	for (NSXMLElement *el in [node tagsWithNames:@"table", @"ul", @"div", nil]) {
 		hashableEl = [HashableElement elementForNode:el];
 		
 		if (CFDictionaryContainsValue(allowed, hashableEl))  continue;
@@ -791,7 +748,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 					//[self debug:[NSString stringWithFormat:@"Allowing %@", [el readabilityDescription]]];
 					
 					BOOL yesBool = YES;
-					for (NSXMLElement *desnode in [self tagsIn:el withNames:@"table", @"ul", @"div", nil]) {
+					for (NSXMLElement *desnode in [el tagsWithNames:@"table", @"ul", @"div", nil]) {
 						CFDictionarySetValue(allowed, [HashableElement elementForNode:desnode], (void *)yesBool);
 					}
 				}
@@ -847,13 +804,13 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 		}
 		
 		// Delete non-content nodes
-		nodes = [self tagsIn:self.html withNames:@"noscript", @"script", @"style", nil];
+		nodes = [self.html tagsWithNames:@"noscript", @"script", @"style", nil];
 		for (NSXMLNode *i in nodes) {
 			[i detach];
 		}
 		
 		// Add readability CSS ID to body tag
-		nodes = [self tagsIn:self.html withNames:@"body", nil];
+		nodes = [self.html tagsWithNames:@"body", nil];
 		for (NSXMLNode *i in nodes) {
 			[i addCSSName:@"readabilityBody" toAttributeWithName:@"id"];
 		}

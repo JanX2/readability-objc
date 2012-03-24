@@ -8,7 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
+extern NSString * const		tagNameXPath;
+
 @interface NSXMLNode (HTMLUtilities)
+
+- (NSArray *)tagsWithNames:(NSString *)firstTagName, ... NS_REQUIRES_NIL_TERMINATION;
+- (NSArray *)reverseTagsWithNames:(NSString *)firstTagName, ... NS_REQUIRES_NIL_TERMINATION;
 
 - (void)addCSSName:(NSString *)cssName toAttributeWithName:(NSString *)attributeName;
 

@@ -8,7 +8,47 @@
 
 #import "NSXMLNode+HTMLUtilities.h"
 
+
+// Original XPath: @".//%@". Alternative XPath: @".//*[matches(name(),'%@','i')]"
+NSString * const	tagNameXPath = @".//*[lower-case(name())='%@']";
+
+
 @implementation NSXMLNode (HTMLUtilities)
+
+- (NSArray *)tagsWithNames:(NSString *)firstTagName, ... ;
+{
+    NSMutableArray *tags = [NSMutableArray array];
+	
+	va_list tag_names;
+	va_start (tag_names, firstTagName);
+    for (NSString *tagName = firstTagName; tagName != nil; tagName = va_arg(tag_names, NSString *)) {
+		NSArray *foundNodes = [self nodesForXPath:[NSString stringWithFormat:tagNameXPath, tagName] 
+											error:NULL];
+		//foundNodes = [[foundNodes reverseObjectEnumerator] allObjects];
+		[tags addObjectsFromArray:foundNodes];
+    }
+	va_end (tag_names);
+	
+	return tags;
+}
+
+- (NSArray *)reverseTagsWithNames:(NSString *)firstTagName, ... ;
+{
+    NSMutableArray *tags = [NSMutableArray array];
+	
+	va_list tag_names;
+	va_start (tag_names, firstTagName);
+    for (NSString *tagName = firstTagName; tagName != nil; tagName = va_arg(tag_names, NSString *)) {
+		NSArray *foundNodes = [self nodesForXPath:[NSString stringWithFormat:tagNameXPath, tagName] 
+											error:NULL];
+		foundNodes = [[foundNodes reverseObjectEnumerator] allObjects];
+		[tags addObjectsFromArray:foundNodes];
+    }
+	va_end (tag_names);
+	
+	return tags;
+}
+
 
 - (void)addCSSName:(NSString *)cssName toAttributeWithName:(NSString *)attributeName;
 {
