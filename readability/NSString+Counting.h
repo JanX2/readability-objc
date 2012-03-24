@@ -11,5 +11,7 @@
 @interface NSString (Counting)
 
 - (NSUInteger)countOccurancesOfString:(NSString *)needle;
+- (NSUInteger)countSubstringsWithOptions:(NSStringEnumerationOptions)opts;
+- (BOOL)countOfSubstringsWithOptions:(NSStringEnumerationOptions)opts atLeast:(NSUInteger)lowerBound;
 
 @end
