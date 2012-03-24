@@ -17,6 +17,8 @@
 		3DC9BE7214F93ECC007062BC /* JXReadabilityDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC9BE7114F93ECC007062BC /* JXReadabilityDocument.m */; };
 		3DC9BEC414FA5F12007062BC /* NSXMLNode+HTMLUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC9BEC314FA5F12007062BC /* NSXMLNode+HTMLUtilities.m */; };
 		3DDBC67F151DCB9600D8CF54 /* htmls.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DDBC67E151DCB9600D8CF54 /* htmls.m */; };
+		3DDBC6AA151E306D00D8CF54 /* NSString+ReplaceExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DDBC6A9151E306D00D8CF54 /* NSString+ReplaceExtensions.m */; };
+		3DDBC6AE151E349900D8CF54 /* NSString+JXRemoving.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DDBC6AD151E349900D8CF54 /* NSString+JXRemoving.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -52,6 +54,10 @@
 		3DC9BEC314FA5F12007062BC /* NSXMLNode+HTMLUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSXMLNode+HTMLUtilities.m"; path = "readability/NSXMLNode+HTMLUtilities.m"; sourceTree = "<group>"; };
 		3DDBC67D151DCB9600D8CF54 /* htmls.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = htmls.h; path = readability/htmls.h; sourceTree = "<group>"; };
 		3DDBC67E151DCB9600D8CF54 /* htmls.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = htmls.m; path = readability/htmls.m; sourceTree = "<group>"; };
+		3DDBC6A8151E306D00D8CF54 /* NSString+ReplaceExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSString+ReplaceExtensions.h"; path = "readability/NSString+ReplaceExtensions.h"; sourceTree = "<group>"; };
+		3DDBC6A9151E306D00D8CF54 /* NSString+ReplaceExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSString+ReplaceExtensions.m"; path = "readability/NSString+ReplaceExtensions.m"; sourceTree = "<group>"; };
+		3DDBC6AC151E349900D8CF54 /* NSString+JXRemoving.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+JXRemoving.h"; sourceTree = "<group>"; };
+		3DDBC6AD151E349900D8CF54 /* NSString+JXRemoving.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+JXRemoving.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -159,6 +165,10 @@
 				3DC9BEC314FA5F12007062BC /* NSXMLNode+HTMLUtilities.m */,
 				3DACF75C15051755003A6BF7 /* NSString+Counting.h */,
 				3DACF75D15051755003A6BF7 /* NSString+Counting.m */,
+				3DDBC6AC151E349900D8CF54 /* NSString+JXRemoving.h */,
+				3DDBC6AD151E349900D8CF54 /* NSString+JXRemoving.m */,
+				3DDBC6A8151E306D00D8CF54 /* NSString+ReplaceExtensions.h */,
+				3DDBC6A9151E306D00D8CF54 /* NSString+ReplaceExtensions.m */,
 			);
 			name = Categories;
 			sourceTree = "<group>";
@@ -230,6 +240,8 @@
 				3DC9BEC414FA5F12007062BC /* NSXMLNode+HTMLUtilities.m in Sources */,
 				3DACF75E15051755003A6BF7 /* NSString+Counting.m in Sources */,
 				3DDBC67F151DCB9600D8CF54 /* htmls.m in Sources */,
+				3DDBC6AA151E306D00D8CF54 /* NSString+ReplaceExtensions.m in Sources */,
+				3DDBC6AE151E349900D8CF54 /* NSString+JXRemoving.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

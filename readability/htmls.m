@@ -1,15 +1,20 @@
 //
-//  htmls.m
-//  readability
+//	htmls.m
+//	readability
 //
-//  Created by Jan on 24.03.12.
-//  Copyright (c) 2012 geheimwerk.de. All rights reserved.
+//	Created by Jan on 24.03.12.
+//	Copyright (c) 2012 geheimwerk.de. All rights reserved.
 //
 
 #import "htmls.h"
 
 #import "NSString+Counting.h"
 #import "NSXMLNode+HTMLUtilities.h"
+#import "NSString+JXRemoving.h"
+#import "NSString+ReplaceExtensions.h"
+
+NSString * normalizeEntities(NSString *curTitle);
+NSString * normTitle(NSString *title);
 
 NSString * lxmlCSSToXPath(NSString *cssExpr) {
 	NSString *prefix = @"descendant-or-self::";
@@ -57,41 +62,82 @@ NSString * lxmlCSSToXPath(NSString *cssExpr) {
 		return result;
 	}
 	
-    return expr;
+	return expr;
 }
 
 
+NSString * normalizeEntities(NSString *curTitle) {
+	NSDictionary *entities = [NSDictionary dictionaryWithObjectsAndKeys:
+							  @"-", @"—", // EM DASH
+							  @"-", @"–", // EN DASH
+							  @"-", @"&mdash;",
+							  @"-", @"&ndash;",
+							  @" ", @" ", // NO-BREAK SPACE
+							  @"\"", @"«",
+							  @"\"", @"»",
+							  @"\"", @"&quot;",
+							  nil];
+	
+	return [curTitle stringByReplacingStringsFromDictionary:entities];
+}
+
+NSString * normTitle(NSString *title) {
+	return normalizeEntities([title jx_stringByCollapsingAndRemovingSurroundingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet] intoString:@" "]);
+}
+
 void addMatch(NSMutableSet *collection, NSString *text, NSString *orig) {
-    //text = normTitle(text);
-    if ((text.length >= 15) && [text countOfSubstringsWithOptions:NSStringEnumerationByWords atLeast:2]) {
-		//NSString *textWithoutQuotes = [text stringByReplacingOccurrencesOfString:@"\"" withString:@"" options:NSLiteralSearch range:NSMakeRange(0, text.length)];
-		//NSString *origWithoutQuotes = [orig stringByReplacingOccurrencesOfString:@"\"" withString:@"" options:NSLiteralSearch range:NSMakeRange(0, orig.length)];
+	text = normTitle(text);
+	
+	if ((text.length >= 15) && [text countOfSubstringsWithOptions:NSStringEnumerationByWords atLeast:2]) {
+		NSString *textWithoutQuotes = [text stringByReplacingOccurrencesOfString:@"\"" withString:@"" options:NSLiteralSearch range:NSMakeRange(0, text.length)];
+		NSString *origWithoutQuotes = [orig stringByReplacingOccurrencesOfString:@"\"" withString:@"" options:NSLiteralSearch range:NSMakeRange(0, orig.length)];
 		
-		if (([orig rangeOfString:text 
+		if (([origWithoutQuotes rangeOfString:textWithoutQuotes 
 						 options:NSLiteralSearch 
-						   range:NSMakeRange(0, orig.length)].location) != NSNotFound) {
+							 range:NSMakeRange(0, origWithoutQuotes.length)].location) != NSNotFound) {
 			[collection addObject:text];
 		}
 
-    }
+	}
 }
 
 NSString * shortenTitleInDocument(NSXMLDocument *doc) {
-    NSString *title = nil;
+	static BOOL firstRun = YES;
+	static NSArray *cssXPaths = nil;
+	static NSArray *delimiters = nil;
+	
+	if (firstRun) {
+		NSArray *cssSelectors = [NSArray arrayWithObjects:@"#title", @"#head", @"#heading", @".pageTitle", @".newsTitle", @".title", @".head", @".heading", @".contentheading", @".smallHeaderRed", nil];
+		
+		NSMutableArray *cssXPathsMutable = [[NSMutableArray alloc] initWithCapacity:cssSelectors.count];
+		
+		for (NSString *selector in cssSelectors) {
+			[cssXPathsMutable addObject:lxmlCSSToXPath(selector)];
+		}
+		
+		cssXPaths = [cssXPathsMutable copy];
+		[cssXPathsMutable release];
+		
+		delimiters = [NSArray arrayWithObjects:@" | ", @" - ", @" :: ", @" / ", nil];
+		
+		firstRun = NO;
+	}
+	
+	NSString *title = nil;
 	NSArray *titleNodes = [doc tagsWithNames:@"title", nil];
 	
-    if (titleNodes.count == 0)  return @"";
+	if (titleNodes.count == 0)	return @"";
 	
 	title = [[titleNodes objectAtIndex:0] lxmlText];
-    
-    NSString *orig;
-    title = orig;// = normTitle(title);
+	
+	NSString *orig;
+	title = orig = normTitle(title);
 
 #warning How does NSXML treat HTML entities? 
 
-    NSMutableSet *candidates = [NSMutableSet set];
+	NSMutableSet *candidates = [NSMutableSet set];
 
-    for (NSXMLElement *e in [doc tagsWithNames:@"h1", @"h2", @"h3", nil]) {
+	for (NSXMLElement *e in [doc tagsWithNames:@"h1", @"h2", @"h3", nil]) {
 		NSString *eText;
 		
 		eText = e.lxmlText;
@@ -105,29 +151,11 @@ NSString * shortenTitleInDocument(NSXMLDocument *doc) {
 		}
 	}
 
-	static BOOL firstRun = YES;
-	static NSArray *cssXPaths = nil;
-
-	if (firstRun) {
-		NSArray *cssSelectors = [NSArray arrayWithObjects:@"#title", @"#head", @"#heading", @".pageTitle", @".newsTitle", @".title", @".head", @".heading", @".contentheading", @".smallHeaderRed", nil];
-		
-		NSMutableArray *cssXPathsMutable = [[NSMutableArray alloc] initWithCapacity:cssSelectors.count];
-		
-		for (NSString *selector in cssSelectors) {
-			[cssXPathsMutable addObject:lxmlCSSToXPath(selector)];
-		}
-		
-		cssXPaths = [cssXPathsMutable copy];
-		[cssXPathsMutable release];
-		
-		firstRun = NO;
-	}
-	
-    for (NSString *item in cssXPaths) {
+	for (NSString *item in cssXPaths) {
 		NSArray *foundNodes = [doc nodesForXPath:item 
-										   error:NULL];
+											 error:NULL];
 		
-        for (NSXMLElement *e in foundNodes) {
+		for (NSXMLElement *e in foundNodes) {
 			NSString *eText;
 			
 			eText = e.lxmlText;
@@ -141,8 +169,8 @@ NSString * shortenTitleInDocument(NSXMLDocument *doc) {
 			}
 		}
 	}
-                
-    if (candidates) {
+				
+	if (candidates) {
 		NSSortDescriptor *candidatesAscendingDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"length" 
 																						ascending:YES];
 		
@@ -150,37 +178,48 @@ NSString * shortenTitleInDocument(NSXMLDocument *doc) {
 									 [NSArray arrayWithObject:candidatesAscendingDescriptor]];
 		
 		
-        title = [sortedCandidates lastObject];
+		title = [sortedCandidates lastObject];
 	}
-    else {
-        for (delimiter in [NSArray arrayWithObjects:@" | ", @" - ", @" :: ", @" / ", nil]) {
-            if (delimiter in title) {
-                parts = orig.split(delimiter);
-                if (len(parts[0].split()) >= 4) {
-                    title = parts[0];
-                    break;
-                    }
-                else if (len(parts[-1].split()) >= 4) {
-                    title = parts[-1];
-                    break;
-                }
-                }
-        else {
-            if (@": " in title) {
-                parts = orig.split(@": ");
-                if (len(parts[-1].split()) >= 4) {
-                    title = parts[-1];
-                    }
-                else {
-                    title = orig.split(@": ", 1)[1];
-                    }
-                    }
-                    }
+	else {
+		NSArray *parts;
+		
+		for (NSString *delimiter in delimiters) {
+			if ([title rangeOfString:delimiter 
+							 options:NSLiteralSearch].location != NSNotFound) {
+				parts = [orig componentsSeparatedByString:delimiter];
+				
+				NSString *titleCandidate;
+				if (titleCandidate = [parts objectAtIndex:0], 
+					[titleCandidate countOfSubstringsWithOptions:NSStringEnumerationByWords atLeast:4]) {
+					title = titleCandidate;
+					break;
+				}
+				else if (titleCandidate = [parts lastObject], 
+						 [titleCandidate countOfSubstringsWithOptions:NSStringEnumerationByWords atLeast:4]) {
+					title = titleCandidate;
+					break;
+				}
+			}
+			else {
+				if ([title rangeOfString:@": " 
+								 options:NSLiteralSearch].location != NSNotFound) {
+					parts = [orig componentsSeparatedByString:@": "];
+					
+					NSString *titleCandidate;
+					if (titleCandidate = [parts lastObject], 
+						[titleCandidate countOfSubstringsWithOptions:NSStringEnumerationByWords atLeast:4]) {
+						title = [parts lastObject];
+					}
+					else {
+						title = [[parts subarrayWithRange:NSMakeRange(1, (parts.count - 1))] componentsJoinedByString:@": "];
+					}
+				}
+			}
 		}
 	}
 
 	NSUInteger titleLength = title.length;
-    if ( !((15 < titleLength) && (titleLength < 150)) )  return orig;
+	if ( !((15 < titleLength) && (titleLength < 150)) )	 return orig;
 
-    return title;
+	return title;
 }
