@@ -16,6 +16,7 @@
 		3DC9BE5414F7D3D4007062BC /* KBWebArchiver.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC9BE5214F7D3D4007062BC /* KBWebArchiver.m */; };
 		3DC9BE7214F93ECC007062BC /* JXReadabilityDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC9BE7114F93ECC007062BC /* JXReadabilityDocument.m */; };
 		3DC9BEC414FA5F12007062BC /* NSXMLNode+HTMLUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC9BEC314FA5F12007062BC /* NSXMLNode+HTMLUtilities.m */; };
+		3DDBC67F151DCB9600D8CF54 /* htmls.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DDBC67E151DCB9600D8CF54 /* htmls.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -49,6 +50,8 @@
 		3DC9BE7114F93ECC007062BC /* JXReadabilityDocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = JXReadabilityDocument.m; path = readability/JXReadabilityDocument.m; sourceTree = "<group>"; };
 		3DC9BEC214FA5F12007062BC /* NSXMLNode+HTMLUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSXMLNode+HTMLUtilities.h"; path = "readability/NSXMLNode+HTMLUtilities.h"; sourceTree = "<group>"; };
 		3DC9BEC314FA5F12007062BC /* NSXMLNode+HTMLUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSXMLNode+HTMLUtilities.m"; path = "readability/NSXMLNode+HTMLUtilities.m"; sourceTree = "<group>"; };
+		3DDBC67D151DCB9600D8CF54 /* htmls.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = htmls.h; path = readability/htmls.h; sourceTree = "<group>"; };
+		3DDBC67E151DCB9600D8CF54 /* htmls.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = htmls.m; path = readability/htmls.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,6 +72,7 @@
 			children = (
 				3DC9BE6E14F93EB8007062BC /* Classes */,
 				3DC9BEBE14FA5CC3007062BC /* Categories */,
+				3DDBC675151DCB5200D8CF54 /* Other Sources */,
 				3D706B8E14F6ABDD008ACC2E /* readability */,
 				3DC9BE5514F7D3DF007062BC /* Third Party */,
 				3D706B9F14F6AC59008ACC2E /* Configs */,
@@ -159,6 +163,15 @@
 			name = Categories;
 			sourceTree = "<group>";
 		};
+		3DDBC675151DCB5200D8CF54 /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				3DDBC67D151DCB9600D8CF54 /* htmls.h */,
+				3DDBC67E151DCB9600D8CF54 /* htmls.m */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -216,6 +229,7 @@
 				3DC9BE7214F93ECC007062BC /* JXReadabilityDocument.m in Sources */,
 				3DC9BEC414FA5F12007062BC /* NSXMLNode+HTMLUtilities.m in Sources */,
 				3DACF75E15051755003A6BF7 /* NSString+Counting.m in Sources */,
+				3DDBC67F151DCB9600D8CF54 /* htmls.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
