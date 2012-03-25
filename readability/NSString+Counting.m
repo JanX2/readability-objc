@@ -33,11 +33,11 @@
 
 - (NSUInteger)countSubstringsWithOptions:(NSStringEnumerationOptions)opts;
 {
-	if ([self length] == 0)  return 0;
+	if (self.length == 0)  return 0;
 	
 	__block NSUInteger count = 0;
 	
-	[self enumerateSubstringsInRange:NSMakeRange(0, [self length]) 
+	[self enumerateSubstringsInRange:NSMakeRange(0, self.length) 
 							 options:(opts | NSStringEnumerationSubstringNotRequired) 
 						  usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
 							  count++;
@@ -48,11 +48,11 @@
 
 - (BOOL)countOfSubstringsWithOptions:(NSStringEnumerationOptions)opts atLeast:(NSUInteger)lowerBound;
 {
-	if ([self length] == 0)  return 0;
+	if (self.length == 0)  return 0;
 	
 	__block NSUInteger count = 0;
 	
-	[self enumerateSubstringsInRange:NSMakeRange(0, [self length]) 
+	[self enumerateSubstringsInRange:NSMakeRange(0, self.length) 
 							 options:(opts | NSStringEnumerationSubstringNotRequired) 
 						  usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
 							  count++;
