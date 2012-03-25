@@ -36,7 +36,6 @@ NSString * lxmlCSSToXPath(NSString *cssExpr) {
 	NSRange cssExprRange = NSMakeRange(0, cssExpr.length);
 	NSTextCheckingResult *match;
 	
-#warning Check if -firstMatchInString returns nil for no match!! 
 	match = [elRe firstMatchInString:cssExpr options:0 range:cssExprRange];
 	if (match != nil) {
 		return [NSString stringWithFormat:@"%@%@", prefix, [cssExpr substringWithRange:[match rangeAtIndex:1]]];
@@ -83,6 +82,17 @@ NSString * normalizeEntities(NSString *curTitle) {
 
 NSString * normTitle(NSString *title) {
 	return normalizeEntities([title jx_stringByCollapsingAndRemovingSurroundingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet] intoString:@" "]);
+}
+
+NSString * getTitleInDocument(NSXMLDocument *doc) {
+	NSString *title = nil;
+	NSArray *titleNodes = [doc tagsWithNames:@"title", nil];
+	
+	if (titleNodes.count == 0)	return @"[no-title]";
+	
+	title = [[titleNodes objectAtIndex:0] lxmlText];
+    
+    return normTitle(title);
 }
 
 void addMatch(NSMutableSet *collection, NSString *text, NSString *orig) {
@@ -182,6 +192,7 @@ NSString * shortenTitleInDocument(NSXMLDocument *doc) {
 	}
 	else {
 		NSArray *parts;
+		BOOL didBreak = NO;
 		
 		for (NSString *delimiter in delimiters) {
 			if ([title rangeOfString:delimiter 
@@ -192,27 +203,31 @@ NSString * shortenTitleInDocument(NSXMLDocument *doc) {
 				if (titleCandidate = [parts objectAtIndex:0], 
 					[titleCandidate countOfSubstringsWithOptions:NSStringEnumerationByWords atLeast:4]) {
 					title = titleCandidate;
+					didBreak = YES;
 					break;
 				}
 				else if (titleCandidate = [parts lastObject], 
 						 [titleCandidate countOfSubstringsWithOptions:NSStringEnumerationByWords atLeast:4]) {
 					title = titleCandidate;
+					didBreak = YES;
 					break;
 				}
 			}
-			else {
-				if ([title rangeOfString:@": " 
-								 options:NSLiteralSearch].location != NSNotFound) {
-					parts = [orig componentsSeparatedByString:@": "];
-					
-					NSString *titleCandidate;
-					if (titleCandidate = [parts lastObject], 
-						[titleCandidate countOfSubstringsWithOptions:NSStringEnumerationByWords atLeast:4]) {
-						title = [parts lastObject];
-					}
-					else {
-						title = [[parts subarrayWithRange:NSMakeRange(1, (parts.count - 1))] componentsJoinedByString:@": "];
-					}
+		}
+		
+		if (didBreak == NO) {
+			NSString *delimiter = @": ";
+			if ([title rangeOfString:delimiter 
+							 options:NSLiteralSearch].location != NSNotFound) {
+				parts = [orig componentsSeparatedByString:delimiter];
+				
+				NSString *titleCandidate;
+				if (titleCandidate = [parts lastObject], 
+					[titleCandidate countOfSubstringsWithOptions:NSStringEnumerationByWords atLeast:4]) {
+					title = [parts lastObject];
+				}
+				else {
+					title = [[parts subarrayWithRange:NSMakeRange(1, (parts.count - 1))] componentsJoinedByString:delimiter];
 				}
 			}
 		}

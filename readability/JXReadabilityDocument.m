@@ -21,6 +21,7 @@
 
 #import "JXReadabilityDocument.h"
 
+#import "htmls.h"
 #import "NSString+Counting.h"
 #import "NSXMLNode+HTMLUtilities.h"
 
@@ -135,6 +136,17 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	[divToPElementsTagNames release];
 	
 	[super dealloc];
+}
+
+
+- (NSString *)title;
+{
+	return getTitleInDocument(self.html);
+}
+
+- (NSString *)shortTitle;
+{
+	return shortenTitleInDocument(self.html);
 }
 
 

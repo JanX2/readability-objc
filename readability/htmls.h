@@ -10,4 +10,5 @@
 
 NSString * lxmlCSSToXPath(NSString *cssExpr);
 void addMatch(NSMutableSet *collection, NSString *text, NSString *orig);
+NSString * getTitleInDocument(NSXMLDocument *doc);
 NSString * shortenTitleInDocument(NSXMLDocument *doc);

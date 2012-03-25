@@ -48,6 +48,9 @@
 
 @property (nonatomic, retain) NSMutableDictionary *options;
 
+@property (nonatomic, readonly) NSString *title;
+@property (nonatomic, readonly) NSString *shortTitle;
+
 - (id)initWithXMLDocument:(NSXMLDocument *)aDoc copyDocument:(BOOL)doCopy;
 - (id)initWithXMLDocument:(NSXMLDocument *)aDoc; // Same as above with doCopy == NO
 
