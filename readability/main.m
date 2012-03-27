@@ -15,10 +15,10 @@
 #import "JXReadabilityDocument.h"
 
 
-BOOL dumpXMLDocumentToPath(NSXMLDocument *doc, NSString *output, NSUInteger xmlOutputOptions, NSString *tag, 		NSError **error);
+BOOL dumpXMLDocumentToPath(NSXMLDocument *doc, NSString *output, NSUInteger xmlOutputOptions, NSString *tag, NSError **error);
 
 
-BOOL dumpXMLDocumentToPath(NSXMLDocument *doc, NSString *output, NSUInteger xmlOutputOptions, NSString *tag, 		NSError **error) {
+BOOL dumpXMLDocumentToPath(NSXMLDocument *doc, NSString *output, NSUInteger xmlOutputOptions, NSString *tag, NSError **error) {
 	if (output == nil)  return NO;
 	
 	NSString *outputPath = nil;
