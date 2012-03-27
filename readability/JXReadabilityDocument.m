@@ -359,7 +359,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	// Things like preambles, content split by ads that we removed, etc.
 
 	float siblingScoreThreshold = MAX(10.0, ([[bestCandidate objectForKey:@"contentScore"] floatValue] * 0.2));
-	NSXMLDocument *output = [[[NSXMLDocument alloc] initWithXMLString:@"<html><body /></html>" 
+	NSXMLDocument *output = [[[NSXMLDocument alloc] initWithXMLString:@"<html><head><title /></head><body /></html>" 
 															 options:NSXMLDocumentTidyHTML 
 															   error:NULL] autorelease];
 	[output setDocumentContentKind:NSXMLDocumentXHTMLKind];
@@ -841,6 +841,10 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 		if (bestCandidate != nil) {
 			article = [self getArticleForCandidates:candidates 
 								   andBestCandidate:bestCandidate];
+			
+			NSXMLElement *titleNode = [[article nodesForXPath:@"/html/head/title" 
+														error:NULL] objectAtIndex:0];
+			[titleNode setStringValue:[self title]];
 		}
 		else {
 			if (ruthless) {
