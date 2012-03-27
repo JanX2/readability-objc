@@ -23,7 +23,8 @@ BOOL dumpXMLDocumentToPath(NSXMLDocument *doc, NSString *output, NSUInteger xmlO
 	
 	NSString *outputPath = nil;
 	if (tag == nil) {
-		outputPath = output;
+		outputPath = [[output stringByDeletingPathExtension] 
+					  stringByAppendingPathExtension:@"html"];
 	} else {
 		outputPath = [[[output stringByDeletingPathExtension] 
 					   stringByAppendingString:tag]
