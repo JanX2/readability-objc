@@ -200,7 +200,7 @@ int main(int argc, const char * argv[])
 				BOOL success;
 				
 				// Create a new webarchive with the processed markup as main content and the resources from the source webarchive 
-				NSData *docData = [doc XMLDataWithOptions:xmlOutputOptions];
+				NSData *docData = [summaryDoc XMLDataWithOptions:xmlOutputOptions];
 				WebResource *mainResource = [[WebResource alloc] initWithData:docData 
 																		  URL:[resource URL] 
 																	 MIMEType:[resource MIMEType]
