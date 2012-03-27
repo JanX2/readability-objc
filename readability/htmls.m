@@ -98,7 +98,7 @@ NSString * getTitleInDocument(NSXMLDocument *doc) {
 void addMatch(NSMutableSet *collection, NSString *text, NSString *orig) {
 	text = normTitle(text);
 	
-	if ((text.length >= 15) && [text countOfSubstringsWithOptions:NSStringEnumerationByWords atLeast:2]) {
+	if ((text.length >= 15) && [text countOfSubstringsWithOptions:NSStringEnumerationByWords isAtLeast:2]) {
 		NSString *textWithoutQuotes = [text stringByReplacingOccurrencesOfString:@"\"" withString:@"" options:NSLiteralSearch range:NSMakeRange(0, text.length)];
 		NSString *origWithoutQuotes = [orig stringByReplacingOccurrencesOfString:@"\"" withString:@"" options:NSLiteralSearch range:NSMakeRange(0, orig.length)];
 		
@@ -201,13 +201,13 @@ NSString * shortenTitleInDocument(NSXMLDocument *doc) {
 				
 				NSString *titleCandidate;
 				if (titleCandidate = [parts objectAtIndex:0], 
-					[titleCandidate countOfSubstringsWithOptions:NSStringEnumerationByWords atLeast:4]) {
+					[titleCandidate countOfSubstringsWithOptions:NSStringEnumerationByWords isAtLeast:4]) {
 					title = titleCandidate;
 					didBreak = YES;
 					break;
 				}
 				else if (titleCandidate = [parts lastObject], 
-						 [titleCandidate countOfSubstringsWithOptions:NSStringEnumerationByWords atLeast:4]) {
+						 [titleCandidate countOfSubstringsWithOptions:NSStringEnumerationByWords isAtLeast:4]) {
 					title = titleCandidate;
 					didBreak = YES;
 					break;
@@ -223,7 +223,7 @@ NSString * shortenTitleInDocument(NSXMLDocument *doc) {
 				
 				NSString *titleCandidate;
 				if (titleCandidate = [parts lastObject], 
-					[titleCandidate countOfSubstringsWithOptions:NSStringEnumerationByWords atLeast:4]) {
+					[titleCandidate countOfSubstringsWithOptions:NSStringEnumerationByWords isAtLeast:4]) {
 					title = [parts lastObject];
 				}
 				else {

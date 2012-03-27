@@ -46,7 +46,7 @@
 	return count;
 }
 
-- (BOOL)countOfSubstringsWithOptions:(NSStringEnumerationOptions)opts atLeast:(NSUInteger)lowerBound;
+- (BOOL)countOfSubstringsWithOptions:(NSStringEnumerationOptions)opts isAtLeast:(NSUInteger)lowerBound;
 {
 	if (self.length == 0)  return 0;
 	

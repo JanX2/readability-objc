@@ -12,6 +12,6 @@
 
 - (NSUInteger)countOccurancesOfString:(NSString *)needle;
 - (NSUInteger)countSubstringsWithOptions:(NSStringEnumerationOptions)opts;
-- (BOOL)countOfSubstringsWithOptions:(NSStringEnumerationOptions)opts atLeast:(NSUInteger)lowerBound;
+- (BOOL)countOfSubstringsWithOptions:(NSStringEnumerationOptions)opts isAtLeast:(NSUInteger)lowerBound;
 
 @end
