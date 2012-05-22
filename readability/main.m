@@ -171,15 +171,17 @@ int main(int argc, const char * argv[])
 		if (doc != nil) {
 			[doc setDocumentContentKind:contentKind];
 			
-			JXReadabilityDocument *readabilityDoc = [[JXReadabilityDocument alloc] initWithXMLDocument:doc
-																						  copyDocument:NO];
-			summaryDoc = [readabilityDoc summaryXMLDocument];
-			cleanedDoc = readabilityDoc.html;
-			
-			//NSLog(@"\nTitle: %@", readabilityDoc.title);
-			//NSLog(@"\nShort Title: %@", readabilityDoc.shortTitle);
-			
-			[readabilityDoc release];
+			{
+				JXReadabilityDocument *readabilityDoc = [[JXReadabilityDocument alloc] initWithXMLDocument:doc
+																							  copyDocument:NO];
+				summaryDoc = [readabilityDoc summaryXMLDocument];
+				cleanedDoc = readabilityDoc.html;
+				
+				//NSLog(@"\nTitle: %@", readabilityDoc.title);
+				//NSLog(@"\nShort Title: %@", readabilityDoc.shortTitle);
+				
+				[readabilityDoc release];
+			}
 		}
 
 #if DEBUG
