@@ -56,8 +56,8 @@
 		3DDBC67E151DCB9600D8CF54 /* htmls.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = htmls.m; path = readability/htmls.m; sourceTree = "<group>"; };
 		3DDBC6A8151E306D00D8CF54 /* NSString+ReplaceExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSString+ReplaceExtensions.h"; path = "readability/NSString+ReplaceExtensions.h"; sourceTree = "<group>"; };
 		3DDBC6A9151E306D00D8CF54 /* NSString+ReplaceExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSString+ReplaceExtensions.m"; path = "readability/NSString+ReplaceExtensions.m"; sourceTree = "<group>"; };
-		3DDBC6AC151E349900D8CF54 /* NSString+JXRemoving.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+JXRemoving.h"; sourceTree = "<group>"; };
-		3DDBC6AD151E349900D8CF54 /* NSString+JXRemoving.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+JXRemoving.m"; sourceTree = "<group>"; };
+		3DDBC6AC151E349900D8CF54 /* NSString+JXRemoving.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSString+JXRemoving.h"; path = "readability/NSString+JXRemoving.h"; sourceTree = "<group>"; };
+		3DDBC6AD151E349900D8CF54 /* NSString+JXRemoving.m */ = {isa = PBXFileReference; fileEncoding = 4; name = "NSString+JXRemoving.m"; path = "readability/NSString+JXRemoving.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
