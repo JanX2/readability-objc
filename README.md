@@ -13,7 +13,10 @@ Currently it deviates from the original in various ways:
 
 readability-objc uses [KBWebArchiver](https://github.com/JanX2/webarchiver) to create a webarchive from the input if necessary. Amongst other things, this enables the automatic encoding detection implemented in WebKit.
 
-Don’t forget to `git submodule update`!
+KBWebArchiver is included as a submodule. After cloning a main repository, you initialize submodules by typing:
+
+	git submodule init
+	git submodule update
 
 The code is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0). 
 
