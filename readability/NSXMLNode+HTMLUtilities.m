@@ -189,6 +189,26 @@ NSString * const	tagNameXPath = @".//*[lower-case(name())='%@']";
 	
 - (NSString *)readabilityDescriptionWithDepth:(NSUInteger)depth;
 {
+	NSString *selfName = self.name;
+	if (selfName == nil) {
+		NSString *kinds[] = {
+			@"NSXMLInvalidKind,", 
+			@"NSXMLDocumentKind,", 
+			@"NSXMLElementKind,", 
+			@"NSXMLAttributeKind,", 
+			@"NSXMLNamespaceKind,", 
+			@"NSXMLProcessingInstructionKind,", 
+			@"NSXMLCommentKind,", 
+			@"NSXMLTextKind,", 
+			@"NSXMLDTDKind,", 
+			@"NSXMLEntityDeclarationKind,", 
+			@"NSXMLAttributeDeclarationKind,", 
+			@"NSXMLElementDeclarationKind,", 
+			@"NSXMLNotationDeclarationKind"
+		};
+		return [NSString stringWithFormat:@"[%@]", kinds[(int)self.kind]];
+	}
+
 	NSMutableString *name = [NSMutableString string];
 	
 	NSString *ids = [self cssNamesForAttributeWithName:@"id"];
@@ -210,7 +230,6 @@ NSString * const	tagNameXPath = @".//*[lower-case(name())='%@']";
 												 range:NSMakeRange(0, [classes length])]];
 	}
 	
-	NSString *selfName = self.name;
 	if (([name length] == 0) || ![selfName isEqualToString:@"div"]) {
 		[name insertString:selfName atIndex:0];
 	}
