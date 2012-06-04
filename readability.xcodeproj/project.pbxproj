@@ -10,6 +10,8 @@
 		3D706B8D14F6ABDD008ACC2E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D706B8C14F6ABDD008ACC2E /* Foundation.framework */; };
 		3D706B9014F6ABDD008ACC2E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D706B8F14F6ABDD008ACC2E /* main.m */; };
 		3D706B9414F6ABDD008ACC2E /* readability.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3D706B9314F6ABDD008ACC2E /* readability.1 */; };
+		3DAB86C9157CC04500392401 /* JXWebResourceLoadingBarrier.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DAB86C8157CC04500392401 /* JXWebResourceLoadingBarrier.m */; };
+		3DAB86CC157CC15700392401 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DAB86CB157CC15700392401 /* AppKit.framework */; };
 		3DACF75E15051755003A6BF7 /* NSString+Counting.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DACF75D15051755003A6BF7 /* NSString+Counting.m */; };
 		3DC9BE3314F77F37007062BC /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DC9BE3214F77F37007062BC /* WebKit.framework */; };
 		3DC9BE5314F7D3D4007062BC /* NSURL+ValidityChecking.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC9BE5014F7D3D4007062BC /* NSURL+ValidityChecking.m */; };
@@ -41,6 +43,9 @@
 		3D706B9214F6ABDD008ACC2E /* readability-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "readability-Prefix.pch"; sourceTree = "<group>"; };
 		3D706B9314F6ABDD008ACC2E /* readability.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = readability.1; sourceTree = "<group>"; };
 		3D706BA014F6AC76008ACC2E /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		3DAB86C7157CC04500392401 /* JXWebResourceLoadingBarrier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JXWebResourceLoadingBarrier.h; path = readability/JXWebResourceLoadingBarrier.h; sourceTree = "<group>"; };
+		3DAB86C8157CC04500392401 /* JXWebResourceLoadingBarrier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = JXWebResourceLoadingBarrier.m; path = readability/JXWebResourceLoadingBarrier.m; sourceTree = "<group>"; };
+		3DAB86CB157CC15700392401 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		3DACF75C15051755003A6BF7 /* NSString+Counting.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSString+Counting.h"; path = "readability/NSString+Counting.h"; sourceTree = "<group>"; };
 		3DACF75D15051755003A6BF7 /* NSString+Counting.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSString+Counting.m"; path = "readability/NSString+Counting.m"; sourceTree = "<group>"; };
 		3DC9BE3214F77F37007062BC /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
@@ -65,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3DAB86CC157CC15700392401 /* AppKit.framework in Frameworks */,
 				3DC9BE3314F77F37007062BC /* WebKit.framework in Frameworks */,
 				3D706B8D14F6ABDD008ACC2E /* Foundation.framework in Frameworks */,
 			);
@@ -98,6 +104,7 @@
 		3D706B8B14F6ABDC008ACC2E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				3DAB86CB157CC15700392401 /* AppKit.framework */,
 				3D706B8C14F6ABDD008ACC2E /* Foundation.framework */,
 				3DC9BE3214F77F37007062BC /* WebKit.framework */,
 			);
@@ -154,6 +161,8 @@
 			children = (
 				3DC9BE7014F93ECC007062BC /* JXReadabilityDocument.h */,
 				3DC9BE7114F93ECC007062BC /* JXReadabilityDocument.m */,
+				3DAB86C7157CC04500392401 /* JXWebResourceLoadingBarrier.h */,
+				3DAB86C8157CC04500392401 /* JXWebResourceLoadingBarrier.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -242,6 +251,7 @@
 				3DDBC67F151DCB9600D8CF54 /* htmls.m in Sources */,
 				3DDBC6AA151E306D00D8CF54 /* NSString+ReplaceExtensions.m in Sources */,
 				3DDBC6AE151E349900D8CF54 /* NSString+JXRemoving.m in Sources */,
+				3DAB86C9157CC04500392401 /* JXWebResourceLoadingBarrier.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

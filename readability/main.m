@@ -8,11 +8,14 @@
 
 #import <Foundation/Foundation.h>
 
+#import <AppKit/AppKit.h>
+
 #import <Webkit/Webkit.h>
 #import <WebKit/WebArchive.h>
 
 #import "KBWebArchiver.h"
 #import "JXReadabilityDocument.h"
+#import "JXWebResourceLoadingBarrier.h"
 
 
 BOOL dumpXMLDocumentToPath(NSXMLDocument *doc, NSString *output, NSUInteger xmlOutputOptions, NSString *tag, NSError **error);
@@ -198,7 +201,11 @@ int main(int argc, const char * argv[])
 				NSLog(@"\n%@", error);
 			}
 			
-			if ([[output pathExtension] isEqualToString:@"webarchive"]) {
+			NSString *outputPathExtension = [output pathExtension];
+			
+			BOOL wantWebarchive;
+			if ((wantWebarchive = [outputPathExtension isEqualToString:@"webarchive"]) 
+				|| [outputPathExtension isEqualToString:@"rtf"]) {
 				BOOL success;
 				
 				// Create a new webarchive with the processed markup as main content and the resources from the source webarchive 
@@ -216,15 +223,42 @@ int main(int argc, const char * argv[])
 				
 				NSData *outWebarchiveData = [outWebarchive data];
 				
-				success = [outWebarchiveData writeToFile:output 
-												 options:NSDataWritingAtomic 
-												   error:&error];
-				
-				[outWebarchive release];
+				if (wantWebarchive) {
+					success = [outWebarchiveData writeToFile:output 
+													 options:NSDataWritingAtomic 
+													   error:&error];
+				}
+				else {
+					JXWebResourceLoadingBarrier *loadDelegate = [[JXWebResourceLoadingBarrier new] autorelease];
+					loadDelegate.localResourceLoadingOnly = localOnly;
+					NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
+											 loadDelegate, NSWebResourceLoadDelegateDocumentOption,
+											 nil];
+					NSDictionary *documentAttributes = nil;
+					NSAttributedString *outAttributedString = [[NSAttributedString alloc] initWithData:outWebarchiveData 
+																							   options:options
+																					documentAttributes:&documentAttributes 
+																								 error:&error];
+					if (outAttributedString != nil) {
+						NSRange fullRange = NSMakeRange(0, outAttributedString.length);
+						NSData *outRTFData = [outAttributedString RTFFromRange:fullRange documentAttributes:documentAttributes];
+						success = [outRTFData writeToFile:output 
+												  options:NSDataWritingAtomic 
+													error:&error];
+					}
+					else {
+						success = NO;
+					}
+					
+					[outAttributedString release];
+				}
 				
 				if (!success) {
 					NSLog(@"\n%@", error);
 				}
+				
+				[outWebarchive release];
+				
 			}
 		}
 		
