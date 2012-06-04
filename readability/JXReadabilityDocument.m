@@ -179,6 +179,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 			
 			if (([unlikelyCandidatesRe rangeOfFirstMatchInString:s options:0 range:sRange].location != NSNotFound) 
 				&& ([okMaybeItsACandidateRe rangeOfFirstMatchInString:s options:0 range:sRange].location == NSNotFound)
+				&& ![elem.name isEqualToString:@"html"]
 				&& ![elem.name isEqualToString:@"body"]) {
 				//[self debug:[NSString stringWithFormat:@"Removing unlikely candidate - %@", [elem readabilityDescription]]];
 				[elem detach];
