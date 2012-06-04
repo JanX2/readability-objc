@@ -355,25 +355,36 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 			nil];
 }
 
-- (NSXMLDocument *)getArticleForCandidates:(NSDictionary *)candidates andBestCandidate:(NSDictionary *)bestCandidate
+- (NSXMLDocument *)getArticleForCandidates:(NSDictionary *)candidates 
+						  andBestCandidate:(NSDictionary *)bestCandidate
+							   HTMLPartial:(BOOL)HTMLPartial
 {
 	// Now that we have the top candidate, look through its siblings for content that might also be related
 	// Things like preambles, content split by ads that we removed, etc.
 
 	float siblingScoreThreshold = MAX(10.0, ([[bestCandidate objectForKey:@"contentScore"] floatValue] * 0.2));
-	NSXMLDocument *output = [[[NSXMLDocument alloc] initWithXMLString:@"<html><head><title /></head><body /></html>" 
-															 options:NSXMLDocumentTidyHTML 
-															   error:NULL] autorelease];
+	
+	// Create a new HTML document with a html->body->div
+	NSXMLDocument *output = [[[NSXMLDocument alloc] initWithXMLString:@"<html><head><title /></head><body><div /></body></html>" 
+																options:NSXMLDocumentTidyHTML 
+																  error:NULL] autorelease];
 	[output setDocumentContentKind:NSXMLDocumentXHTMLKind];
-	NSXMLElement *htmlBody = [[output nodesForXPath:@"/html/body" 
+	NSXMLElement *htmlDiv = [[output nodesForXPath:@"/html/body/div" 
 											  error:NULL] objectAtIndex:0];
+#if 0
+	// Disabled until we can figure out a good way to return an NSXMLDocument OR an NSXMLElement
+	if (HTMLPartial) {
+		output = htmlDiv;
+	}
+#endif
 	NSXMLNode *bestElem = [bestCandidate objectForKey:@"elem"];
 	
 	BOOL append;
 	NSDictionary *siblingScoreDict;
 	HashableElement *siblingKey;
 	for (NSXMLNode *sibling in [[bestElem parent] children]) {
-		//if isinstance(sibling, NavigableString): continue#in lxml there no concept of simple text 
+		//if isinstance(sibling, NavigableString): continue
+		// in lxml there no concept of simple text 
 		append = NO; 
 		
 		if (sibling == bestElem)  append = YES;
@@ -407,7 +418,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 			}
 		}
 		
-		if (append)  [htmlBody addChild:[[sibling copy] autorelease]];
+		if (append)  [htmlDiv addChild:[[sibling copy] autorelease]];
 	}				
 	
 	//if output is not None: 
@@ -796,7 +807,9 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 	return node;
 }
 
-- (NSXMLDocument *)summaryXMLDocument;
+// HTMLPartial == YES is supposed to request the return of only the div of the document (not wrapped in <html> and <body> tags).
+// Currently unsupported. Implemented here to keep parity with python/lxml-readability.
+- (NSXMLDocument *)summaryXMLDocument:(BOOL)HTMLPartial;
 {
 	if (self.html == nil)  return nil;
 	
@@ -842,11 +855,14 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 		
 		if (bestCandidate != nil) {
 			article = [self getArticleForCandidates:candidates 
-								   andBestCandidate:bestCandidate];
+								   andBestCandidate:bestCandidate
+										HTMLPartial:HTMLPartial];
 			
-			NSXMLElement *titleNode = [[article nodesForXPath:@"/html/head/title" 
-														error:NULL] objectAtIndex:0];
-			[titleNode setStringValue:[self title]];
+			if (HTMLPartial == NO) {
+				NSXMLElement *titleNode = [[article nodesForXPath:@"/html/head/title" 
+															error:NULL] objectAtIndex:0];
+				[titleNode setStringValue:[self title]];
+			}
 		}
 		else {
 			if (ruthless) {
@@ -886,6 +902,10 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 
 }
 
+- (NSXMLDocument *)summaryXMLDocument;
+{
+	return [self summaryXMLDocument:NO];
+}
 @end
 
 
