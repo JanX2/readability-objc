@@ -736,7 +736,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 				//		for desnode in self.tags(el, "table", "ul", "div"):
 				//			allowed[desnode] = True
 				
-				// Find x non empty preceding and succeeding siblings
+				// Find x non-empty preceding and succeeding siblings
 				NSUInteger i = 0, j = 0;
 				NSUInteger x = 1;
 				CFMutableArrayRef siblings = CFArrayCreateMutable(kCFAllocatorDefault, 0, NULL);
@@ -797,6 +797,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 	}
 
 	/*
+	// This doesn’t appear to do anything!
 	for el in ([node] + [n for n in node.iter()]):
 		if not (self.options['attributes']):
 			//el.attrib = {} //FIXME:Checkout the effects of disabling this
@@ -870,7 +871,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 				[self debug:@"Ruthless removal did not work. "];
 				ruthless = NO;
 				//[self debug:@"Ended up stripping too much - going for a safer _parse"];
-				// try again
+				// Loop through and try again.
 				continue;
 			}
 			else {
@@ -893,6 +894,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 		BOOL ofAcceptableLength = cleanedArticleLength >= retryLength;
 		if (ruthless && !ofAcceptableLength) {
 			ruthless = NO;
+			// Loop through and try again.
 			continue;
 		}
 		else {

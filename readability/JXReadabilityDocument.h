@@ -21,6 +21,8 @@
 
 #import <Foundation/Foundation.h>
 
+// Class for cleaning up an NSXMLDocument to improve readability.
+
 @interface JXReadabilityDocument : NSObject
 {
 	NSString *				input;
@@ -47,6 +49,14 @@
 @property (nonatomic, retain) NSXMLDocument *html;
 
 @property (nonatomic, retain) NSMutableDictionary *options;
+/*
+Possible keys (in flux):
+ - attributes: (currently disabled)
+ - debug (NSNumber): output debug messages
+ - minTextLength: 
+ - retryLength: 
+ - url: will allow adjusting links to be absolute
+ */
 
 @property (nonatomic, readonly) NSString *title;
 @property (nonatomic, readonly) NSString *shortTitle;
@@ -54,6 +64,7 @@
 - (id)initWithXMLDocument:(NSXMLDocument *)aDoc copyDocument:(BOOL)doCopy;
 - (id)initWithXMLDocument:(NSXMLDocument *)aDoc; // Same as above with doCopy == NO
 
+// Generate and return the summary of the HTML document
 - (NSXMLDocument *)summaryXMLDocument;
 
 @end
