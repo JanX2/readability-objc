@@ -152,7 +152,9 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 
 - (void)debug:(id)a
 {
-	/*if ([(NSNumber *)[self.options objectForKey:@"debug"] boolValue])  */NSLog(@"%@", a);
+	if ([(NSNumber *)[self.options objectForKey:@"debug"] boolValue]) {
+		NSLog(@"%@", a);
+	}
 }
 
 - (void)removeUnlikelyCandidates
@@ -848,14 +850,14 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 		}
 		else {
 			if (ruthless) {
-				NSLog(@"Ruthless removal did not work. ");
+				[self debug:@"Ruthless removal did not work. "];
 				ruthless = NO;
 				//[self debug:@"Ended up stripping too much - going for a safer _parse"];
 				// try again
 				continue;
 			}
 			else {
-				NSLog(@"Ruthless and lenient parsing did not work. Returning raw html");
+				[self debug:@"Ruthless and lenient parsing did not work. Returning raw html"];
 				if ([self.html kind] == NSXMLElementKind) {
 					article = [[(NSXMLElement *)self.html elementsForName:@"body"] objectAtIndex:0];
 				}
