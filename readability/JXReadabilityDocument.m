@@ -366,7 +366,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	float siblingScoreThreshold = MAX(10.0, ([[bestCandidate objectForKey:@"contentScore"] floatValue] * 0.2));
 	
 	// Create a new HTML document with a html->body->div
-	NSXMLDocument *output = [[[NSXMLDocument alloc] initWithXMLString:@"<html><head><title /></head><body><div /></body></html>" 
+	NSXMLDocument *output = [[[NSXMLDocument alloc] initWithXMLString:@"<html><head><title /></head><body><div id='readibility-root' /></body></html>"
 																options:NSXMLDocumentTidyHTML 
 																  error:NULL] autorelease];
 	[output setDocumentContentKind:NSXMLDocumentXHTMLKind];
