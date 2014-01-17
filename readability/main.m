@@ -231,9 +231,7 @@ int main(int argc, const char * argv[])
 				else {
 					JXWebResourceLoadingBarrier *loadDelegate = [[JXWebResourceLoadingBarrier new] autorelease];
 					loadDelegate.localResourceLoadingOnly = localOnly;
-					NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
-											 loadDelegate, NSWebResourceLoadDelegateDocumentOption,
-											 nil];
+					NSDictionary *options = @{NSWebResourceLoadDelegateDocumentOption: loadDelegate};
 					NSDictionary *documentAttributes = nil;
 					NSAttributedString *outAttributedString = [[NSAttributedString alloc] initWithData:outWebarchiveData 
 																							   options:options

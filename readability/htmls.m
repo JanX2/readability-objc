@@ -66,16 +66,14 @@ NSString * lxmlCSSToXPath(NSString *cssExpr) {
 
 
 NSString * normalizeEntities(NSString *curTitle) {
-	NSDictionary *entities = [NSDictionary dictionaryWithObjectsAndKeys:
-							  @"-", @"—", // EM DASH
-							  @"-", @"–", // EN DASH
-							  @"-", @"&mdash;",
-							  @"-", @"&ndash;",
-							  @" ", @" ", // NO-BREAK SPACE
-							  @"\"", @"«",
-							  @"\"", @"»",
-							  @"\"", @"&quot;",
-							  nil];
+	NSDictionary *entities = @{@"—": @"-", // EM DASH
+							  @"–": @"-", // EN DASH
+							  @"&mdash;": @"-",
+							  @"&ndash;": @"-",
+							  @" ": @" ", // NO-BREAK SPACE
+							  @"«": @"\"",
+							  @"»": @"\"",
+							  @"&quot;": @"\""};
 	
 	return [curTitle stringByReplacingStringsFromDictionary:entities];
 }
@@ -90,7 +88,7 @@ NSString * getTitleInDocument(NSXMLDocument *doc) {
 	
 	if (titleNodes.count == 0)	return @"[no-title]";
 	
-	title = [[titleNodes objectAtIndex:0] lxmlText];
+	title = [titleNodes[0] lxmlText];
     
     return normTitle(title);
 }
@@ -117,7 +115,7 @@ NSString * shortenTitleInDocument(NSXMLDocument *doc) {
 	static NSArray *delimiters = nil;
 	
 	if (firstRun) {
-		NSArray *cssSelectors = [NSArray arrayWithObjects:@"#title", @"#head", @"#heading", @".pageTitle", @".newsTitle", @".title", @".head", @".heading", @".contentheading", @".smallHeaderRed", nil];
+		NSArray *cssSelectors = @[@"#title", @"#head", @"#heading", @".pageTitle", @".newsTitle", @".title", @".head", @".heading", @".contentheading", @".smallHeaderRed"];
 		
 		NSMutableArray *cssXPathsMutable = [[NSMutableArray alloc] initWithCapacity:cssSelectors.count];
 		
@@ -128,7 +126,7 @@ NSString * shortenTitleInDocument(NSXMLDocument *doc) {
 		cssXPaths = [cssXPathsMutable copy];
 		[cssXPathsMutable release];
 		
-		delimiters = [NSArray arrayWithObjects:@" | ", @" - ", @" :: ", @" / ", nil];
+		delimiters = @[@" | ", @" - ", @" :: ", @" / "];
 		
 		firstRun = NO;
 	}
@@ -138,7 +136,7 @@ NSString * shortenTitleInDocument(NSXMLDocument *doc) {
 	
 	if (titleNodes.count == 0)	return @"";
 	
-	title = [[titleNodes objectAtIndex:0] lxmlText];
+	title = [titleNodes[0] lxmlText];
 	
 	NSString *orig;
 	title = orig = normTitle(title);
@@ -185,7 +183,7 @@ NSString * shortenTitleInDocument(NSXMLDocument *doc) {
 																						ascending:YES];
 		
 		NSArray *sortedCandidates = [[candidates allObjects] sortedArrayUsingDescriptors:
-									 [NSArray arrayWithObject:candidatesAscendingDescriptor]];
+									 @[candidatesAscendingDescriptor]];
 		
 		
 		title = [sortedCandidates lastObject];
@@ -200,7 +198,7 @@ NSString * shortenTitleInDocument(NSXMLDocument *doc) {
 				parts = [orig componentsSeparatedByString:delimiter];
 				
 				NSString *titleCandidate;
-				if (titleCandidate = [parts objectAtIndex:0], 
+				if (titleCandidate = parts[0], 
 					[titleCandidate countOfSubstringsWithOptions:NSStringEnumerationByWords isAtLeast:4]) {
 					title = titleCandidate;
 					didBreak = YES;

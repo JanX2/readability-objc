@@ -152,7 +152,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 
 - (void)debug:(id)a
 {
-	if ([(NSNumber *)[self.options objectForKey:@"debug"] boolValue]) {
+	if ([(NSNumber *)(self.options)[@"debug"] boolValue]) {
 		NSLog(@"%@", a);
 	}
 }
@@ -351,7 +351,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	}
 	
 	return [NSMutableDictionary dictionaryWithObjectsAndKeys: 
-			[NSNumber numberWithFloat:contentScore], @"contentScore", 
+			@(contentScore), @"contentScore", 
 			elem, @"elem", 
 			nil];
 }
@@ -363,22 +363,22 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	// Now that we have the top candidate, look through its siblings for content that might also be related
 	// Things like preambles, content split by ads that we removed, etc.
 
-	float siblingScoreThreshold = MAX(10.0, ([[bestCandidate objectForKey:@"contentScore"] floatValue] * 0.2));
+	float siblingScoreThreshold = MAX(10.0, ([bestCandidate[@"contentScore"] floatValue] * 0.2));
 	
 	// Create a new HTML document with a html->body->div
 	NSXMLDocument *output = [[[NSXMLDocument alloc] initWithXMLString:@"<html><head><title /></head><body><div id='readibility-root' /></body></html>"
 																options:NSXMLDocumentTidyHTML 
 																  error:NULL] autorelease];
 	[output setDocumentContentKind:NSXMLDocumentXHTMLKind];
-	NSXMLElement *htmlDiv = [[output nodesForXPath:@"/html/body/div" 
-											  error:NULL] objectAtIndex:0];
+	NSXMLElement *htmlDiv = [output nodesForXPath:@"/html/body/div" 
+											  error:NULL][0];
 #if 0
 	// Disabled until we can figure out a good way to return an NSXMLDocument OR an NSXMLElement
 	if (HTMLPartial) {
 		output = htmlDiv;
 	}
 #endif
-	NSXMLNode *bestElem = [bestCandidate objectForKey:@"elem"];
+	NSXMLNode *bestElem = bestCandidate[@"elem"];
 	
 	BOOL append;
 	NSDictionary *siblingScoreDict;
@@ -392,9 +392,9 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 		
 		if (append == NO) {
 			siblingKey = [HashableElement elementForNode:sibling];
-			siblingScoreDict = [candidates objectForKey:siblingKey];
+			siblingScoreDict = candidates[siblingKey];
 			if ((siblingScoreDict != nil) 
-				&& ([[siblingScoreDict objectForKey:@"contentScore"] floatValue] >= siblingScoreThreshold)) {
+				&& ([siblingScoreDict[@"contentScore"] floatValue] >= siblingScoreThreshold)) {
 				append = YES;
 			}
 		}
@@ -438,7 +438,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 																					   ascending:NO];
 	
 	NSArray *sortedCandidates = [allCandidates sortedArrayUsingDescriptors:
-								 [NSArray arrayWithObject:contentScoreDescendingDescriptor]];
+								 @[contentScoreDescendingDescriptor]];
 	
 #if 0
 	NSXMLElement *elem;
@@ -449,7 +449,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	}
 #endif
 	
-	NSDictionary *bestCandidate = [sortedCandidates objectAtIndex:0];
+	NSDictionary *bestCandidate = sortedCandidates[0];
 	return bestCandidate;
 }
 
@@ -467,7 +467,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 
 - (NSDictionary *)scoreParagraphs
 {
-	NSNumber *minLength = [self.options objectForKey:@"minTextLength"];	
+	NSNumber *minLength = (self.options)[@"minTextLength"];	
 	NSUInteger minLen = (minLength != nil) ? [minLength unsignedIntegerValue] : TEXT_LENGTH_THRESHOLD;
 	
 	NSMutableDictionary *candidates = [NSMutableDictionary dictionary];
@@ -497,17 +497,15 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 		if (innerTextLen < minLen)  continue;
 		
 		hashableParent = [HashableElement elementForNode:parentNode];
-		if ([candidates objectForKey:hashableParent] == nil) { 
-			[candidates setObject:[self scoreNode:parentNode] 
-						   forKey:hashableParent];
+		if (candidates[hashableParent] == nil) { 
+			candidates[hashableParent] = [self scoreNode:parentNode];
 			[ordered addObject:parentNode];
 		}
 		
 		if (grandParentNode != nil) {
 			hashableGrandParent = [HashableElement elementForNode:grandParentNode];
-			if ([candidates objectForKey:hashableGrandParent] == nil) {
-				[candidates setObject:[self scoreNode:grandParentNode] 
-							   forKey:hashableGrandParent];
+			if (candidates[hashableGrandParent] == nil) {
+				candidates[hashableGrandParent] = [self scoreNode:grandParentNode];
 				[ordered addObject:grandParentNode];
 			}
 		}
@@ -521,13 +519,13 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 		//WTF? candidates[elem]['contentScore'] += contentScore
 		float tempScore;
 		NSMutableDictionary *scoreDict;
-		scoreDict = [candidates objectForKey:hashableParent];
-		tempScore = [[scoreDict objectForKey:@"contentScore"] floatValue] + contentScore;
-		[scoreDict setObject:[NSNumber numberWithFloat:tempScore] forKey:@"contentScore"];
+		scoreDict = candidates[hashableParent];
+		tempScore = [scoreDict[@"contentScore"] floatValue] + contentScore;
+		scoreDict[@"contentScore"] = @(tempScore);
 		if (grandParentNode != nil) {
-			scoreDict = [candidates objectForKey:hashableGrandParent];
-			tempScore = [[scoreDict objectForKey:@"contentScore"] floatValue] + contentScore / 2.0;
-			[scoreDict setObject:[NSNumber numberWithFloat:tempScore] forKey:@"contentScore"];
+			scoreDict = candidates[hashableGrandParent];
+			tempScore = [scoreDict[@"contentScore"] floatValue] + contentScore / 2.0;
+			scoreDict[@"contentScore"] = @(tempScore);
 		}
 	}
 	
@@ -539,12 +537,12 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	
 	for (NSXMLElement *elem in ordered) {
 		HashableElement *hashableElem = [HashableElement elementForNode:elem];
-		candidate = [candidates objectForKey:hashableElem];
+		candidate = candidates[hashableElem];
 		ld = [self getLinkDensity:elem];
-		score = [[candidate objectForKey:@"contentScore"] floatValue];
+		score = [candidate[@"contentScore"] floatValue];
 		//[self debug:[NSString stringWithFormat:@"Candid: %6.3f %s link density %.3f -> %6.3f", score, [elem readabilityDescription], ld, score*(1-ld)]];
 		score *= (1 - ld);
-		[candidate setObject:[NSNumber numberWithFloat:score] forKey:@"contentScore"];
+		candidate[@"contentScore"] = @(score);
 	}
 	
 	return candidates;
@@ -568,7 +566,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 #	define DEBUG_SANITIZE	0
 #endif
 	
-	NSNumber *minTextLengthNum = [self.options objectForKey:@"minTextLength"];
+	NSNumber *minTextLengthNum = (self.options)[@"minTextLength"];
 	NSUInteger minLen = (minTextLengthNum != nil) ? [minTextLengthNum unsignedIntegerValue] : TEXT_LENGTH_THRESHOLD;
 	for (NSXMLElement *header in [node tagsWithNames:@"h1", @"h2", @"h3", @"h4", @"h5", @"h6", nil]) {
 		if ([self classWeight:header] < 0 || [self getLinkDensity:header] > 0.33) { 
@@ -588,7 +586,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 	NSString *tag;
 	float contentScore;
 	CFIndex kindCount;
-	NSArray *tagKinds = [NSArray arrayWithObjects:@"p", @"img", @"li", @"a", @"embed", @"input", nil];
+	NSArray *tagKinds = @[@"p", @"img", @"li", @"a", @"embed", @"input"];
 	NSUInteger contentLength;
 	float linkDensity;
 	NSXMLNode *parentNode;
@@ -606,9 +604,9 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 		
 		weight = [self classWeight:el];
 		
-		elDict = [candidates objectForKey:hashableEl];
+		elDict = candidates[hashableEl];
 		if (elDict != nil) {
-			contentScore = [[elDict objectForKey:@"contentScore"] floatValue];
+			contentScore = [elDict[@"contentScore"] floatValue];
 			//print '!',el, '-> %6.3f' % contentScore
 		}
 		else {
@@ -861,8 +859,8 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 										HTMLPartial:HTMLPartial];
 			
 			if (HTMLPartial == NO) {
-				NSXMLElement *titleNode = [[article nodesForXPath:@"/html/head/title" 
-															error:NULL] objectAtIndex:0];
+				NSXMLElement *titleNode = [article nodesForXPath:@"/html/head/title" 
+															error:NULL][0];
 				[titleNode setStringValue:[self title]];
 			}
 		}
@@ -877,7 +875,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 			else {
 				[self debug:@"Ruthless and lenient parsing did not work. Returning raw html"];
 				if ([self.html kind] == NSXMLElementKind) {
-					article = [[(NSXMLElement *)self.html elementsForName:@"body"] objectAtIndex:0];
+					article = [(NSXMLElement *)self.html elementsForName:@"body"][0];
 				}
 				if (article == nil) {
 					article = self.html;
@@ -889,7 +887,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 		NSXMLDocument *cleanedArticle = [self sanitizeArticle:article forCandidates:candidates];
 		//[self cleanAttributes:]
 		NSUInteger cleanedArticleLength = (cleanedArticle == nil) ? 0 : [[cleanedArticle XMLString] length];
-		NSNumber *retryLengthNum = [self.options objectForKey:@"retryLength"];
+		NSNumber *retryLengthNum = (self.options)[@"retryLength"];
 		NSUInteger retryLength = (retryLengthNum != nil) ? [retryLengthNum unsignedIntegerValue] : RETRY_LENGTH;
 		BOOL ofAcceptableLength = cleanedArticleLength >= retryLength;
 		if (ruthless && !ofAcceptableLength) {

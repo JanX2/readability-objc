@@ -16,7 +16,7 @@
 	
 	for (NSString *target in dict) {
 		[string replaceOccurrencesOfString:target 
-								withString:[dict objectForKey:target] 
+								withString:dict[target] 
 								   options:0 
 									 range:NSMakeRange(0, [string length])];
 	}
