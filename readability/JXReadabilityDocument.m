@@ -775,7 +775,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 					
 					BOOL yesBool = YES;
 					for (NSXMLElement *desnode in [el tagsWithNames:@"table", @"ul", @"div", nil]) {
-						CFDictionarySetValue(allowed, [HashableElement elementForNode:desnode], (void *)yesBool);
+						CFDictionarySetValue(allowed, [HashableElement elementForNode:desnode], (void *)(intptr_t)yesBool);
 					}
 				}
 				
