@@ -16,14 +16,14 @@
 {
     NSRange aRange = [self rangeOfString:prefix options:NSAnchoredSearch];
     if ((aRange.length == 0) || (aRange.location != 0))
-        return [[self retain] autorelease];
+        return self;
     return [self substringFromIndex:aRange.length];
 }
 
 - (NSString *)jx_stringByRemovingSuffix:(NSString *)suffix;
 {
     if (![self hasSuffix:suffix])
-        return [[self retain] autorelease];
+        return self;
     return [self substringToIndex:[self length] - [suffix length]];
 }
 
@@ -53,8 +53,7 @@
             [collapsedString appendString:nonWhitespaceSubstring];
         }
     }
-    [stringScanner release];
-    return [collapsedString autorelease];
+    return collapsedString;
 }
 
 

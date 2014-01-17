@@ -46,9 +46,9 @@
 }
 
 @property (nonatomic, copy) NSString *input;
-@property (nonatomic, retain) NSXMLDocument *html;
+@property (nonatomic, strong) NSXMLDocument *html;
 
-@property (nonatomic, retain) NSMutableDictionary *options;
+@property (nonatomic, strong) NSMutableDictionary *options;
 /*
 Possible keys (in flux):
  - attributes: (currently disabled)

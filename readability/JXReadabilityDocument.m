@@ -49,7 +49,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	NSXMLNode *_node;
 }
 
-@property (nonatomic, retain) NSXMLNode *node;
+@property (nonatomic, strong) NSXMLNode *node;
 
 + (id)elementForNode:(NSXMLNode *)aNode;
 - (id)initWithNode:(NSXMLNode *)aNode;
@@ -75,7 +75,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 - (id)initWithXMLDocument:(NSXMLDocument *)aDoc copyDocument:(BOOL)doCopy;
 {
 	if (doCopy) {
-		return [self initWithXMLDocument:[[aDoc copy] autorelease]];
+		return [self initWithXMLDocument:[aDoc copy]];
 	} else {
 		return [self initWithXMLDocument:aDoc];
 	}
@@ -89,7 +89,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 		self.html = aDoc;
 		self.options = [NSMutableDictionary dictionary];
 		
-		whitespaceAndNewlineCharacterSet = [[NSCharacterSet whitespaceAndNewlineCharacterSet] retain];
+		whitespaceAndNewlineCharacterSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 		
 		unlikelyCandidatesRe = 		[[NSRegularExpression alloc] initWithPattern:unlikelyCandidates		 options:0 error:NULL];
 		okMaybeItsACandidateRe = 	[[NSRegularExpression alloc] initWithPattern:okMaybeItsACandidate	 options:0 error:NULL];
@@ -109,34 +109,13 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 															   error:NULL];
 		
 		NSString *delimiter = @"|";
-		divToPElementsTagNames = 	[stringSetForListStringDelimitedBy(divToPElementsTagNamesString, delimiter) retain];
+		divToPElementsTagNames = 	stringSetForListStringDelimitedBy(divToPElementsTagNamesString, delimiter);
 
 	}
 	
 	return self;
 }
 
-- (void)dealloc
-{
-	self.html = nil;
-	self.options = nil;
-	
-	[whitespaceAndNewlineCharacterSet release];
-	
-	[unlikelyCandidatesRe release];
-	[okMaybeItsACandidateRe release];
-	[positiveRe release];
-	[negativeRe release];
-	[divToPElementsRe release];
-	
-	[newlinePlusSurroundingwhitespaceRe release];
-	[tabRunRe release];
-	[sentenceEndRe release];
-	
-	[divToPElementsTagNames release];
-	
-	[super dealloc];
-}
 
 
 - (NSString *)title;
@@ -282,7 +261,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	
 	CFStringTrimWhitespace((CFMutableStringRef)text);
 	
-	return [text autorelease];
+	return text;
 }
 
 - (NSUInteger)textLength:(NSXMLNode *)i
@@ -366,9 +345,9 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 	float siblingScoreThreshold = MAX(10.0, ([bestCandidate[@"contentScore"] floatValue] * 0.2));
 	
 	// Create a new HTML document with a html->body->div
-	NSXMLDocument *output = [[[NSXMLDocument alloc] initWithXMLString:@"<html><head><title /></head><body><div id='readibility-root' /></body></html>"
+	NSXMLDocument *output = [[NSXMLDocument alloc] initWithXMLString:@"<html><head><title /></head><body><div id='readibility-root' /></body></html>"
 																options:NSXMLDocumentTidyHTML 
-																  error:NULL] autorelease];
+																  error:NULL];
 	[output setDocumentContentKind:NSXMLDocumentXHTMLKind];
 	NSXMLElement *htmlDiv = [output nodesForXPath:@"/html/body/div" 
 											  error:NULL][0];
@@ -419,7 +398,7 @@ NSSet * stringSetForListStringDelimitedBy(NSString *listString, NSString *delimi
 			}
 		}
 		
-		if (append)  [htmlDiv addChild:[[sibling copy] autorelease]];
+		if (append)  [htmlDiv addChild:[sibling copy]];
 	}				
 	
 	//if output is not None: 
@@ -600,7 +579,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 	for (NSXMLElement *el in [node tagsWithNames:@"table", @"ul", @"div", nil]) {
 		hashableEl = [HashableElement elementForNode:el];
 		
-		if (CFDictionaryContainsValue(allowed, hashableEl))  continue;
+		if (CFDictionaryContainsValue(allowed, (__bridge const void *)(hashableEl)))  continue;
 		
 		weight = [self classWeight:el];
 		
@@ -625,7 +604,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 			for (NSString *kind in tagKinds) {
 				kindCount = (CFIndex)[[node nodesForXPath:[NSString stringWithFormat:tagNameXPath, kind] 
 													error:NULL] count];
-				CFDictionaryAddValue(counts, kind, (void *)kindCount);
+				CFDictionaryAddValue(counts, (__bridge const void *)(kind), (void *)kindCount);
 			}
 			
 			if (CFDictionaryGetValueIfPresent(counts, @"li", (const void **)&kindCount)) {
@@ -773,7 +752,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 					
 					BOOL yesBool = YES;
 					for (NSXMLElement *desnode in [el tagsWithNames:@"table", @"ul", @"div", nil]) {
-						CFDictionarySetValue(allowed, [HashableElement elementForNode:desnode], (void *)(intptr_t)yesBool);
+						CFDictionarySetValue(allowed, (__bridge const void *)([HashableElement elementForNode:desnode]), (void *)(intptr_t)yesBool);
 					}
 				}
 				
@@ -916,7 +895,7 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 
 + (id)elementForNode:(NSXMLNode *)aNode;
 {
-	return [[[self alloc] initWithNode:aNode] autorelease];
+	return [[self alloc] initWithNode:aNode];
 }
 
 - (id)initWithNode:(NSXMLNode *)aNode;
@@ -928,12 +907,6 @@ NSUInteger sumCFArrayOfNSUInteger(CFArrayRef array) {
 	return self;
 }
 
-- (void)dealloc
-{
-    self.node = nil;
-	
-	[super dealloc];
-}
 
 - (id)copyWithZone:(NSZone *)zone
 {

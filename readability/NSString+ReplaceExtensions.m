@@ -21,7 +21,7 @@
 									 range:NSMakeRange(0, [string length])];
 	}
 	
-	return [string autorelease];
+	return string;
 }
 
 @end

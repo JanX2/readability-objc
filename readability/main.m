@@ -53,9 +53,7 @@ BOOL dumpXMLDocumentToPath(NSXMLDocument *doc, NSString *output, NSUInteger xmlO
 int main(int argc, const char * argv[])
 {
 
-    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-	
-	{
+	@autoreleasepool {
 		NSError *error = nil;
 
 		NSUserDefaults *args = [NSUserDefaults standardUserDefaults];	
@@ -77,7 +75,6 @@ int main(int argc, const char * argv[])
 #endif
 			fprintf(stderr, "readability 0.1.1\nUsage: \nreadability -url URL [-verbose YES|NO] -output FILE \n");
 			
-			[pool drain];
 			return EXIT_FAILURE;
 		}
 		
@@ -89,13 +86,11 @@ int main(int argc, const char * argv[])
 			webarchive = [archiver webArchive];
 			NSData *data = [webarchive data];
 			error = [archiver error];
-			[archiver release];
 			
 			if ( webarchive == nil || data == nil ) {
 				fprintf(stderr, "Error: Unable to create webarchive\n");
 				if (error != nil)  fprintf(stderr, "%s\n", [[error description] UTF8String]);
 				
-				[pool drain];
 				return EXIT_FAILURE;
 			}
 		}
@@ -107,11 +102,10 @@ int main(int argc, const char * argv[])
 				fprintf(stderr, "Error: Unable to read webarchive\n");
 				if (error != nil)  fprintf(stderr, "%s\n", [[error description] UTF8String]);
 				
-				[pool drain];
 				return EXIT_FAILURE;
 			}
 			
-			webarchive = [[[WebArchive alloc] initWithData:data] autorelease];
+			webarchive = [[WebArchive alloc] initWithData:data];
 		}
 
 		WebResource *resource = [webarchive mainResource];
@@ -132,8 +126,8 @@ int main(int argc, const char * argv[])
 			}
 		}
 		
-		NSString *source = [[[NSString alloc] initWithData:[resource data] 
-												  encoding:encoding] autorelease];
+		NSString *source = [[NSString alloc] initWithData:[resource data] 
+												  encoding:encoding];
 #if DEBUG
 		if (output != nil) {
 			NSString *outputRawPath = [[[output stringByDeletingPathExtension] 
@@ -183,7 +177,6 @@ int main(int argc, const char * argv[])
 				//NSLog(@"\nTitle: %@", readabilityDoc.title);
 				//NSLog(@"\nShort Title: %@", readabilityDoc.shortTitle);
 				
-				[readabilityDoc release];
 			}
 		}
 
@@ -219,7 +212,6 @@ int main(int argc, const char * argv[])
 				WebArchive *outWebarchive = [[WebArchive alloc] initWithMainResource:mainResource 
 																		subresources:[webarchive subresources] 
 																	subframeArchives:[webarchive subframeArchives]];
-				[mainResource release];
 				
 				NSData *outWebarchiveData = [outWebarchive data];
 				
@@ -229,7 +221,7 @@ int main(int argc, const char * argv[])
 													   error:&error];
 				}
 				else {
-					JXWebResourceLoadingBarrier *loadDelegate = [[JXWebResourceLoadingBarrier new] autorelease];
+					JXWebResourceLoadingBarrier *loadDelegate = [JXWebResourceLoadingBarrier new];
 					loadDelegate.localResourceLoadingOnly = localOnly;
 					NSDictionary *options = @{NSWebResourceLoadDelegateDocumentOption: loadDelegate};
 					NSDictionary *documentAttributes = nil;
@@ -248,25 +240,18 @@ int main(int argc, const char * argv[])
 						success = NO;
 					}
 					
-					[outAttributedString release];
 				}
 				
 				if (!success) {
 					NSLog(@"\n%@", error);
 				}
 				
-				[outWebarchive release];
 				
 			}
 		}
 		
-		if (doc != nil)	{
-			[doc release];
-		}
-		
 	}
 	
-	[pool drain];
 	return EXIT_SUCCESS;
 }
 

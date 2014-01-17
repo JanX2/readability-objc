@@ -26,8 +26,6 @@
 		[scanner scanUpToString:needle intoString:NULL];
 	}
 	
-	[scanner release];
-	
 	return count;
 }
 

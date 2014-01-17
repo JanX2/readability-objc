@@ -124,7 +124,6 @@ NSString * shortenTitleInDocument(NSXMLDocument *doc) {
 		}
 		
 		cssXPaths = [cssXPathsMutable copy];
-		[cssXPathsMutable release];
 		
 		delimiters = @[@" | ", @" - ", @" :: ", @" / "];
 		
