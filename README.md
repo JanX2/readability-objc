@@ -1,4 +1,4 @@
-#readability Objective-C
+# readability Objective-C
 
 This is an Objective-C port of a python port of a ruby port of [arc90's readability project](http://lab.arc90.com/experiments/readability/). 
 
@@ -20,11 +20,11 @@ KBWebArchiver is included as a submodule. After cloning a main repository, you i
 
 The code is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0). 
 
-##Based on:
+## Based on:
 
 - [buriy’s python-readability fork](https://github.com/buriy/python-readability).
 - Github user contributions.
 
-##Command-line usage demo:
+## Command-line usage demo:
 
     readability -url http://pypi.python.org/pypi/readability-lxml
